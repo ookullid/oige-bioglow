@@ -7,7 +7,7 @@
   const sb=window.supabase?.createClient ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY) : null;
   const $=id=>document.getElementById(id);
   const esc=value=>String(value??'').replace(/[&<>\"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[ch]));
-  const i18n=()=>window.BioGlowI18n;
+  const i18n=()=>window.KITAI18n;
   const t=key=>i18n()?.t(key)||key;
   let heatMap=null;
   let installPrompt=null;
@@ -58,7 +58,7 @@
   function buildHeaderActions(){
     const nav=document.querySelector('.nav-actions'); if(!nav||$('labOpenBtn')) return;
     const demo=document.createElement('button'); demo.id='demoOpenBtn'; demo.className='btn ghost compact demo-open-btn'; demo.type='button'; demo.innerHTML='▶ <span data-i18n="nav.demo">Demo</span>';
-    const lab=document.createElement('button'); lab.id='labOpenBtn'; lab.className='btn ghost compact lab-open-btn'; lab.type='button'; lab.innerHTML='⚗ <span data-i18n="nav.lab">BioGlow Lab</span>';
+    const lab=document.createElement('button'); lab.id='labOpenBtn'; lab.className='btn ghost compact lab-open-btn'; lab.type='button'; lab.innerHTML='⚗ <span data-i18n="nav.lab">KITA Lab</span>';
     nav.insertBefore(lab,$('accountWrap')); nav.insertBefore(demo,lab);
     demo.onclick=()=>openLab('demo'); lab.onclick=()=>openLab('heatmap');
     i18n()?.apply(document);
@@ -70,7 +70,7 @@
     modal.id='labModal'; modal.className='lab-modal hidden'; modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true'); modal.setAttribute('aria-labelledby','labTitle');
     modal.innerHTML=`<div class="lab-shell">
       <button id="labClose" class="lab-close" type="button" aria-label="Sulge">×</button>
-      <div class="lab-head"><div><span class="eyebrow">BIOGLOW LAB</span><h2 id="labTitle" data-i18n="lab.title">BioGlow Lab</h2><p>Eksperimentaalsed tööriistad, läbipaistvus ja projekti diagnostika. Prototüübi hinnangud on alati eraldi märgistatud.</p></div><span id="privacyPill" class="privacy-pill hidden">◌ Privaatsus</span></div>
+      <div class="lab-head"><div><span class="eyebrow">BIOGLOW LAB</span><h2 id="labTitle" data-i18n="lab.title">KITA Lab</h2><p>Eksperimentaalsed tööriistad, läbipaistvus ja projekti diagnostika. Prototüübi hinnangud on alati eraldi märgistatud.</p></div><span id="privacyPill" class="privacy-pill hidden">◌ Privaatsus</span></div>
       <div class="lab-tabs" role="tablist">
         <button class="lab-tab active" data-lab-tab="heatmap" data-i18n="lab.heatmap">Sobivuskaart</button>
         <button class="lab-tab" data-lab-tab="whatif" data-i18n="lab.whatif">Mis siis kui…?</button>
@@ -84,11 +84,11 @@
       <section class="lab-view" data-lab-view="heatmap"><div class="lab-card"><h3 data-i18n="lab.heatmap">Sobivuskaart</h3><p data-i18n="lab.heatmap.note"></p><div class="lab-toolbar"><button id="runHeatmap" class="mini-btn primary">Koosta kaart</button><span id="heatmapPlant"></span></div><div id="heatmapStatus"></div><div id="heatmapMap" class="lab-map"></div><div class="lab-map-legend"><span><i class="legend-swatch legend-low"></i> vähe vaatlusi</span><span><i class="legend-swatch legend-mid"></i> keskmine</span><span><i class="legend-swatch legend-high"></i> rohkem vaatlusi</span></div></div></section>
       <section class="lab-view hidden" data-lab-view="whatif"><div class="lab-card"><h3 data-i18n="lab.whatif">Mis siis kui…?</h3><p data-i18n="lab.whatif.note"></p><div class="whatif-row"><b>Kastmine</b><input id="whatWater" type="range" min="-2" max="2" step="1" value="0"><output id="whatWaterOut">0</output></div><div class="whatif-row"><b>Varjulisus</b><input id="whatShade" type="range" min="-2" max="2" step="1" value="0"><output id="whatShadeOut">0</output></div><div class="whatif-row"><b>Mulla parandamine</b><input id="whatSoil" type="range" min="0" max="2" step="1" value="0"><output id="whatSoilOut">0</output></div><div class="whatif-row"><b>Drenaaž</b><input id="whatDrain" type="range" min="0" max="2" step="1" value="0"><output id="whatDrainOut">0</output></div><div id="whatIfResult"></div></div></section>
       <section class="lab-view hidden" data-lab-view="quality"><div class="lab-grid"><div class="lab-card"><h3 data-i18n="lab.quality">Andmekvaliteet</h3><p data-i18n="lab.quality.note"></p><div id="qualityList" class="quality-list"></div></div><div class="lab-card"><h3>Tulemuse tundlikkus</h3><p>Millised tegurid mõjutavad prototüübi hinnangut kõige rohkem?</p><div id="sensitivityList" class="sensitivity-list"></div></div></div></section>
-      <section class="lab-view hidden" data-lab-view="expert"><div class="lab-grid"><div class="lab-card"><h3 data-i18n="lab.expert">Eksperdi kontroll</h3><p data-i18n="lab.expert.note"></p><div id="expertReviews"></div></div><div class="lab-card"><h3>Küsi kontrolli</h3><p>Saad saata analüüsi eksperdi kontrolli järjekorda. Täpne asukoht hägustatakse, kui privaatsusrežiim on sees.</p><textarea id="expertRequestNote" class="feature-textarea" placeholder="Mida soovid eksperdilt küsida?"></textarea><div class="lab-toolbar"><button id="requestExpert" class="mini-btn primary">Saada kontrolli</button></div><div id="expertRequestStatus"></div><div id="myExpertRequests"></div></div></div></section>
-      <section class="lab-view hidden" data-lab-view="demo"><div class="lab-card"><div class="demo-stage"><div class="demo-visual"><span class="demo-ribbon">FLL DEMO · töötab ka ilma API-ta</span><div><small>NÄIDISANALÜÜS</small><h3>Harilik kadakas</h3><p><i>Juniperus communis</i></p></div><div><div class="demo-score">78%</div><b>Võib hästi sobida</b><p>Kohalikud vaatlused ja kuiva-poolse kasvukoha tingimused toetavad valikut.</p></div></div><div><h3>Mida BioGlow näitab?</h3><div class="demo-list"><div>✓ Kohalik vaatlusandmestik: tugev</div><div>✓ Valgus: sobiv</div><div>✓ Muld: mõõdukas kuni kuiv</div><div>◌ Niiskus: kontrolli kohapeal</div><div>✓ Kaitsestaatus: tavapärane liik</div><div>⚗ Usaldusaste: keskmine-kõrge</div></div><p class="lab-note">See on demonstratsioon, mitte päris selle koha analüüs. Demo on mõeldud esitluseks juhuks, kui internet või mõni API ei tööta.</p></div></div></div></section>
+      <section class="lab-view hidden" data-lab-view="expert"><div class="lab-grid"><div class="lab-card"><h3 data-i18n="lab.expert">Eksperdi kontroll</h3><p data-i18n="lab.expert.note"></p><div id="expertReviews"></div></div><div class="lab-card"><h3>Küsi meeskonnalt tagasisidet</h3><p>Praegu salvestatakse päring ainult sinu kontole. See ei saada e-kirja eksperdile ega teavita meeskonda. Lisa siia küsimus, mille soovid hiljem ise edasi saata.</p><textarea id="expertRequestNote" class="feature-textarea" placeholder="Mida soovid küsida?"></textarea><div class="lab-toolbar"><button id="requestExpert" class="mini-btn primary">Salvesta küsimus</button></div><div id="expertRequestStatus"></div><div id="myExpertRequests"></div></div></div></section>
+      <section class="lab-view hidden" data-lab-view="demo"><div class="lab-card"><div class="demo-stage"><div class="demo-visual"><span class="demo-ribbon">FLL DEMO · töötab ka ilma API-ta</span><div><small>NÄIDISANALÜÜS</small><h3>Harilik kadakas</h3><p><i>Juniperus communis</i></p></div><div><div class="demo-score">78%</div><b>Võib hästi sobida</b><p>Kohalikud vaatlused ja kuiva-poolse kasvukoha tingimused toetavad valikut.</p></div></div><div><h3>Mida KITA näitab?</h3><div class="demo-list"><div>✓ Kohalik vaatlusandmestik: tugev</div><div>✓ Valgus: sobiv</div><div>✓ Muld: mõõdukas kuni kuiv</div><div>◌ Niiskus: kontrolli kohapeal</div><div>✓ Kaitsestaatus: tavapärane liik</div><div>⚗ Usaldusaste: keskmine-kõrge</div></div><p class="lab-note">See on demonstratsioon, mitte päris selle koha analüüs. Demo on mõeldud esitluseks juhuks, kui internet või mõni API ei tööta.</p></div></div></div></section>
       <section class="lab-view hidden" data-lab-view="diagnostics"><div class="lab-card"><div class="lab-toolbar"><h3 style="margin-right:auto">Teenuste diagnostika</h3><button id="runDiagnostics" class="mini-btn primary" data-i18n="lab.refresh">Värskenda</button></div><div id="diagList" class="diag-list"></div><h3>Lehe enesetest</h3><div id="selfTest" class="lab-selftest"></div></div></section>
-      <section class="lab-view hidden" data-lab-view="stats"><div class="lab-card"><h3>BioGlow projekti koondstatistika</h3><p data-i18n="lab.stats.note"></p><div id="statsGrid" class="stats-grid"></div></div></section>
-      <section class="lab-view hidden" data-lab-view="settings"><div class="lab-card"><h3 data-i18n="lab.settings">Seaded</h3><div class="settings-list"><div class="setting-row"><div><b data-i18n="lab.privacy">Privaatsusrežiim</b><p>Hägustab kasutajale kuvatava ja jagatava GPS-asukoha umbes kilomeetri täpsuseni.</p></div><label class="switch"><input id="privacyToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.contrast">Kõrge kontrast</b><p>Tugevam visuaalne eristus.</p></div><label class="switch"><input id="contrastToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.text">Suurem tekst</b><p>Suurendab teksti kogu BioGlow lehel.</p></div><label class="switch"><input id="textToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b>Liikumisefektid</b><p>Sujuvad ilmumised ja üleminekud; süsteemi reduced-motion seadistus on alati ülimuslik.</p></div><label class="switch"><input id="motionToggle" type="checkbox" checked><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.install">Paigalda äpp</b><p id="pwaStatus" class="pwa-status">Kontrollin paigaldusvõimalust…</p></div><button id="installApp" class="mini-btn primary" data-i18n="lab.install">Paigalda äpp</button></div></div></div></section>
+      <section class="lab-view hidden" data-lab-view="stats"><div class="lab-card"><h3>KITA projekti koondstatistika</h3><p data-i18n="lab.stats.note"></p><div id="statsGrid" class="stats-grid"></div></div></section>
+      <section class="lab-view hidden" data-lab-view="settings"><div class="lab-card"><h3 data-i18n="lab.settings">Seaded</h3><div class="settings-list"><div class="setting-row"><div><b data-i18n="lab.privacy">Privaatsusrežiim</b><p>Hägustab kasutajale kuvatava ja jagatava GPS-asukoha umbes kilomeetri täpsuseni.</p></div><label class="switch"><input id="privacyToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.contrast">Kõrge kontrast</b><p>Tugevam visuaalne eristus.</p></div><label class="switch"><input id="contrastToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.text">Suurem tekst</b><p>Suurendab teksti kogu KITA lehel.</p></div><label class="switch"><input id="textToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b>Liikumisefektid</b><p>Sujuvad ilmumised ja üleminekud; süsteemi reduced-motion seadistus on alati ülimuslik.</p></div><label class="switch"><input id="motionToggle" type="checkbox" checked><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.install">Paigalda äpp</b><p id="pwaStatus" class="pwa-status">Kontrollin paigaldusvõimalust…</p></div><button id="installApp" class="mini-btn primary" data-i18n="lab.install">Paigalda äpp</button></div></div></div></section>
     </div>`;
     document.body.appendChild(modal);
     $('labClose').onclick=closeLab;
@@ -163,7 +163,7 @@
       L.marker([c.lat,c.lon]).addTo(heatMap).bindPopup('Sinu analüüsitav koht');
       setStatus(root,`Leidsin piirkonnast ${Number(data.count||0)} kirjet; kaardil kasutati kuni ${(data.results||[]).length} avalikku koordinaadiga vaatlust.`);
       setTimeout(()=>heatMap.invalidateSize(),80);
-    }catch(err){console.error('[BioGlow heatmap]',err);setStatus(root,err.message||'Kaarti ei saanud koostada.',true);}
+    }catch(err){console.error('[KITA heatmap]',err);setStatus(root,err.message||'Kaarti ei saanud koostada.',true);}
   }
 
   function renderWhatIf(){
@@ -224,7 +224,7 @@
     else if(sb){
       const {data,error}=await sb.from('expert_reviews').select('*').eq('scientific_name',p.scientific).order('reviewed_at',{ascending:false}).limit(10);
       if(error)reviews.innerHTML='<div class="lab-note">Ekspertarvamusi ei saanud laadida.</div>';
-      else if(!data?.length)reviews.innerHTML='<div class="lab-note">Selle liigi kohta pole BioGlow ekspertide tabelis veel kinnitatud arvamust.</div>';
+      else if(!data?.length)reviews.innerHTML='<div class="lab-note">Selle liigi kohta pole KITA ekspertide tabelis veel kinnitatud arvamust.</div>';
       else reviews.innerHTML=data.map(r=>`<article class="lab-card expert-review"><span class="expert-badge">✓ kontrollitud ekspertarvamus</span><h3>${esc(r.reviewer_name)}</h3><small>${esc(r.affiliation||'')}</small><p><b>${esc(r.verdict||'')}</b></p><p>${esc(r.comment||'')}</p><small>${new Date(r.reviewed_at).toLocaleDateString('et-EE')}</small></article>`).join('');
     }
     const u=await user();
@@ -233,11 +233,21 @@
     mine.innerHTML=data?.length?`<h3>Sinu kontrollipäringud</h3>${data.map(r=>`<div class="sensitivity-item"><span>${esc(r.plant_name)} · ${new Date(r.created_at).toLocaleDateString('et-EE')}</span><span class="request-status">${esc(r.status)}</span></div>`).join('')}`:'<div class="lab-note">Sa pole veel kontrollipäringut saatnud.</div>';
   }
   async function requestExpertReview(){
-    const root=$('expertRequestStatus'),u=await user(); if(!u){setStatus(root,'Logi kõigepealt sisse.',true);return;}
-    const p=selectedPlant(),c=publicCoords(); if(!p.common&&!p.scientific){setStatus(root,'Vali enne taim.',true);return;}
-    const {error}=await sb.from('expert_review_requests').insert({user_id:u.id,plant_name:p.common||p.scientific,scientific_name:p.scientific||null,latitude:c?.lat||null,longitude:c?.lon||null,verdict:currentVerdict()||null,note:$('expertRequestNote').value.trim()||null});
-    if(error){console.error(error);setStatus(root,'Kontrollipäringu saatmine ebaõnnestus.',true);return;}
-    setStatus(root,'Kontrollipäring lisati järjekorda.'); $('expertRequestNote').value=''; loadExpertPanel();
+    const root=$('expertRequestStatus'),u=await user();
+    if(!u){setStatus(root,'Logi kõigepealt sisse.',true);return;}
+    const p=selectedPlant(),c=publicCoords();
+    if(!p.common&&!p.scientific){setStatus(root,'Vali enne taim.',true);return;}
+    const siteIds=['siteLight','siteMoisture','siteSoil','siteWind'];
+    const siteNote=siteIds.map(id=>{const e=$(id);return e?.value?`${e.previousElementSibling?.textContent||id}: ${e.selectedOptions?.[0]?.textContent||e.value}`:''}).filter(Boolean).join('; ');
+    const userNote=$('expertRequestNote').value.trim();
+    const note=[userNote,siteNote? `Kasvukoht: ${siteNote}`: ''].filter(Boolean).join('\n');
+    const {error}=await sb.from('expert_review_requests').insert({
+      user_id:u.id,plant_name:p.common||p.scientific,scientific_name:p.scientific||null,
+      latitude:c?.lat||null,longitude:c?.lon||null,verdict:currentVerdict()||null,note:note||null
+    });
+    if(error){console.error(error);setStatus(root,'Küsimuse salvestamine ebaõnnestus.',true);return;}
+    setStatus(root,'Küsimus salvestati sinu kontole. Ekspert ega meeskond ei saa sellest automaatset teadet.');
+    $('expertRequestNote').value='';loadExpertPanel();
   }
 
   async function ping(name,url,options={}){
@@ -250,17 +260,17 @@
       ping('GBIF','https://api.gbif.org/v1/species/match?name=Juniperus%20communis'),
       ping('Open-Meteo','https://api.open-meteo.com/v1/forecast?latitude=59.4&longitude=24.7&current=temperature_2m'),
       ping('SoilGrids','https://rest.isric.org/soilgrids/v2.0/properties/query?lat=59.4&lon=24.7&property=phh2o&depth=0-5cm&value=Q0.5'),
-      ping('BioGlow Worker',WORKER)
+      ping('KITA Worker',WORKER)
     ]);
     if(sb){const start=performance.now();try{const {error}=await sb.auth.getSession();tests.push({name:'Supabase',ok:!error,status:error?'viga':'OK',ms:Math.round(performance.now()-start)});}catch{tests.push({name:'Supabase',ok:false,status:'viga',ms:Math.round(performance.now()-start)});}}
     root.innerHTML=tests.map(x=>`<div class="diag-row"><span><i class="diag-dot ${x.ok?'ok':'bad'}"></i> <b>${esc(x.name)}</b></span><span>${x.ok?'töötab':'probleem'} · ${esc(x.status)}</span><span class="diag-time">${x.ms} ms</span></div>`).join('');
   }
   function runSelfTest(){
     const tests=[
-      ['Põhikaart',!!$('map')],['Analüüsi nupp',!!$('analyzeBtn')],['Tulemuse ala',!!$('resultContent')],['Konto moodul',!!$('accountButton')],['BioGlow+ moodul',!!$('featurePanel')],['Leaflet',!!window.L],['Supabase JS',!!window.supabase],['PDF teek',!!window.jspdf],['Service Worker','serviceWorker' in navigator],['Manifest',!!document.querySelector('link[rel="manifest"]')]
+      ['Põhikaart',!!$('map')],['Analüüsi nupp',!!$('analyzeBtn')],['Tulemuse ala',!!$('resultContent')],['Konto moodul',!!$('accountButton')],['KITA+ moodul',!!$('featurePanel')],['Leaflet',!!window.L],['Supabase JS',!!window.supabase],['PDF teek',!!window.jspdf],['Service Worker','serviceWorker' in navigator],['Manifest',!!document.querySelector('link[rel="manifest"]')]
     ];
     const passed=tests.filter(x=>x[1]).length;
-    $('selfTest').textContent=`BioGlow self-test: ${passed}/${tests.length}\n`+tests.map(([n,ok])=>`${ok?'PASS':'FAIL'}  ${n}`).join('\n');
+    $('selfTest').textContent=`KITA self-test: ${passed}/${tests.length}\n`+tests.map(([n,ok])=>`${ok?'PASS':'FAIL'}  ${n}`).join('\n');
   }
   async function loadStats(){
     const root=$('statsGrid'); if(!root||!sb)return; root.innerHTML='<div class="lab-note">Laadin…</div>';
@@ -298,7 +308,7 @@
     if($('motionToggle'))$('motionToggle').checked=localStorage.getItem('bioglow_motion')!=='0';
     setContrast(localStorage.getItem('bioglow_contrast')==='1'); setLargeText(localStorage.getItem('bioglow_large_text')==='1');
     const install=$('installApp'),status=$('pwaStatus');
-    if(install&&status){if(window.matchMedia('(display-mode: standalone)').matches){install.disabled=true;status.textContent='BioGlow töötab juba installitud äpina.';}else if(installPrompt){install.disabled=false;status.textContent='Brauser lubab BioGlow installida.';}else{install.disabled=false;status.textContent='Kui paigaldusnupp ei avane, kasuta brauseri “Install app / Add to Home Screen” valikut.';}}
+    if(install&&status){if(window.matchMedia('(display-mode: standalone)').matches){install.disabled=true;status.textContent='KITA töötab juba installitud äpina.';}else if(installPrompt){install.disabled=false;status.textContent='Brauser lubab KITA installida.';}else{install.disabled=false;status.textContent='Kui paigaldusnupp ei avane, kasuta brauseri “Install app / Add to Home Screen” valikut.';}}
   }
   async function installApp(){
     if(!installPrompt){$('pwaStatus').textContent='Brauser ei pakkunud automaatset installiakent. Ava brauseri menüü ja vali “Install app” või “Add to Home Screen”.';return;}
@@ -331,7 +341,7 @@
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('labModal')?.classList.contains('hidden'))closeLab();});
     document.addEventListener('bioglow:language',()=>{i18n()?.apply(document);});
     setContrast(localStorage.getItem('bioglow_contrast')==='1'); setLargeText(localStorage.getItem('bioglow_large_text')==='1');
-    window.BioGlowLab={open:openLab,heatmap:renderHeatmap,diagnostics:runDiagnostics,selfTest:runSelfTest};
+    window.KITALab={open:openLab,heatmap:renderHeatmap,diagnostics:runDiagnostics,selfTest:runSelfTest};
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
