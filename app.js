@@ -464,17 +464,6 @@
     }
     return [...species.values()].sort((a,b) => b.count - a.count);
   }
-  async function selectedPlantCount(key, lat, lon){
-    const url = new URL('https://api.gbif.org/v1/occurrence/search');
-    url.searchParams.set('taxon_key', key);
-    url.searchParams.set('decimalLatitude', `${lat - .09},${lat + .09}`);
-    url.searchParams.set('decimalLongitude', `${lon - .16},${lon + .16}`);
-    url.searchParams.set('country', 'EE');
-    url.searchParams.set('hasCoordinate', 'true');
-    url.searchParams.set('limit', '0');
-    const data = await fetchJson(url, {}, 5500);
-    return Number(data.count || 0);
-  }
   async function photoAI(file, location){
     if(!file) return 'Fotot ei kasutatud';
     try{
@@ -492,45 +481,37 @@
     const value=id => $(id)?.value || '';
     return {light:value('siteLight'),moisture:value('siteMoisture'),soil:value('siteSoil'),wind:value('siteWind')};
   }
-  function renderResult(selectedCount, nearby, aiText){
+  function renderResult(nearby, aiText){
     const root = $('verdict');
     const evidence = $('evidenceList');
     const protection = protectedInfo(state.plant.scientific);
     const invasive = isInvasive(state.plant.scientific);
     const site = siteContext();
     const hasSiteContext = Object.values(site).some(Boolean);
-    let kind = 'maybe', title = 'Vajab kasvukoha kontrolli', label = 'ESIALGNE HINNANG';
-    let copy = 'Läheduses tehtud vaatlused näitavad, et seda liiki on piirkonnas kohatud, kuid ei tõesta sobivust sinu peenrasse. Kontrolli eraldi taime valguse, mullaniiskuse ja mulla vajadusi.';
+    let kind = 'maybe', title = 'Sobivust ei saa kinnitada', label = 'ESIALGNE HINNANG';
+    let copy = 'KITA ei kasuta piirkonna vaatlusarvu kasvukoha sobivuse määramiseks. Praegune prototüüp ei võrdle veel taime kinnitatud valguse ja mullavajadusi sinu kasvukohaga.';
     if(invasive){
       kind = 'bad'; title = 'Ära istuta loodusesse'; label = 'VÕÕR- VÕI INVASIIVSE LIIGI HOIATUS';
-      copy = 'Liik on KITA kontrollnimekirjas. Vaatlused ei muuda seda tavaliseks istutussoovituseks; kontrolli kehtivat Keskkonnaameti teavet.';
+      copy = 'Liik on KITA kontrollnimekirjas; kontrolli kehtivat Keskkonnaameti teavet.';
     } else if(protection?.category === 'I' || protection?.category === 'II'){
       kind = 'maybe'; title = 'Kaitsealune liik'; label = `${protection.category} KAITSEKATEGOORIA`;
       copy = 'KITA ei anna I–II kaitsekategooria liigile tavapärast istutussoovitust. Ära võta taimi loodusest.';
-    } else if(selectedCount === null){
-      kind = 'maybe'; title = 'Vaatlusandmeid ei saanud kontrollida'; label = 'PROOVI HILJEM UUESTI';
-      copy = 'GBIF-i vaatlusandmete kontroll ei õnnestunud. Praegu ei saa kohalike vaatluste arvu näidata.';
-    } else if(selectedCount === 0){
-      kind = 'maybe'; title = 'Andmeid pole piisavalt'; label = 'VAJAB LISAKONTROLLI';
-      copy = 'Lähedasi avalikke vaatlusi ei leitud. See ei tähenda, et taim kasvukohas ei sobiks: aiataimede vaatlusi võib andmebaasides vähe olla.';
     }
-    const countChip = selectedCount == null ? '<span class="result-chip">vaatlusarv pole saadaval</span>' : `<span class="result-chip">${selectedCount} kohalikku vaatlust</span>`;
     const siteNote = hasSiteContext ? '<div class="safety-note">Sinu kasvukohakirjeldus on lisainfo. Praegu ei võrrelda seda automaatselt kinnitatud liigipõhiste vajadustega.</div>' : '';
     root.className = `verdict-card ${kind}`;
     root.innerHTML = `
       <div class="verdict-top"><div class="verdict-icon">${kind === 'good' ? '✓' : kind === 'maybe' ? '?' : '!'}</div><div><small>${esc(label)}</small><h3>${esc(title)}</h3></div></div>
       <div class="selected-result"><b>${esc(state.plant.common)}</b><span>${esc(state.plant.scientific)}</span></div>
       <p>${esc(copy)}</p>
-      <div class="result-chips">${countChip}${protection ? `<span class="result-chip protect">🛡 ${protection.category} kaitsekategooria</span>` : ''}</div>
+      <div class="result-chips">${protection ? `<span class="result-chip protect">🛡 ${protection.category} kaitsekategooria</span>` : ''}</div>
       ${protection ? '<div class="safety-note">Kaitsealust taime ei käsitleta tavapärase istutussoovitusena. Ära võta taimi loodusest.</div>' : ''}${siteNote}`;
 
-    const total = nearby.reduce((sum, item) => sum + item.count, 0);
     const contextLabels = {light:['Valgus','siteLight'],moisture:['Mullaniiskus','siteMoisture'],soil:['Mullatüüp','siteSoil'],wind:['Tuultele avatus','siteWind']};
     const contextRows = Object.values(contextLabels).filter(([,id])=>$(id)?.value).map(([label,id]) =>
       `<div class="evidence-row"><span>⌖</span><div><small>Sinu kasvukohakirjeldus · ${label}</small><b>${esc($(id).selectedOptions?.[0]?.textContent || $(id).value)}</b><p>Lisateave, mitte automaatne sobivusotsus</p></div></div>`
     ).join('');
     evidence.innerHTML = `
-      <div class="evidence-row"><span>⌖</span><div><small>Kohalikud vaatlused · GBIF</small><b>${selectedCount == null ? 'Tundlik detail peidetud' : `${selectedCount} valitud liigi vaatlust`}</b><p>${total} avalikku taimekirjet piirkonnas. Vaatluskoht ei kirjelda tingimata sinu peenra tingimusi.</p></div></div>
+      <div class="evidence-row"><span>⌖</span><div><small>Piirkonna vaatlused</small><b>Ei kasutata sobivushinnangus</b><p>Lähipiirkonna leiud aitavad kirjeldada ümbruse loodust, kuid ei kinnita taime sobivust sinu kasvukohale.</p></div></div>
       ${contextRows}
       <div class="evidence-row"><span>◎</span><div><small>Foto AI</small><b>${esc(aiText)}</b><p>Visuaalne lisakontekst; ei otsusta sobivust</p></div></div>
       <div class="evidence-row"><span>🛡</span><div><small>Kaitsestaatus</small><b>${protection ? `${protection.category} kaitsekategooria` : 'Kaitsekategooriat ei tuvastatud'}</b><p>${invasive ? 'Võõr-/invasiivse liigi hoiatus' : 'Kontrolli kehtivat ametlikku teavet'}</p></div></div>`;
@@ -698,12 +679,7 @@
         photoAI(state.file, state.location)
       ]);
       if(analysisId !== state.analysisId) return;
-      const protection = protectedInfo(state.plant.scientific);
-      const sensitive = protection?.category === 'I' || protection?.category === 'II';
-      const selectedCount = sensitive ? null : await selectedPlantCount(state.plant.key, state.location.lat, state.location.lon).catch(() => null);
-      if(analysisId !== state.analysisId) return;
-
-      renderResult(selectedCount, nearby, aiText);
+      renderResult(nearby, aiText);
       renderAlternatives(nearby);
       renderConservation(nearby);
       loadEnvironment(state.location.lat, state.location.lon, analysisId);
