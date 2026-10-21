@@ -9,7 +9,7 @@
   const EXTRA_NAMES = {
     'saar':'Fraxinus excelsior','harilik saar':'Fraxinus excelsior','jalakas':'Ulmus glabra','harilik jalakas':'Ulmus glabra',
     'paakspuu':'Frangula alnus','harilik paakspuu':'Frangula alnus','lodjapuu':'Viburnum opulus','harilik lodjapuu':'Viburnum opulus',
-    'sinilill':'Hepatica nobilis','nurmenukk':'Primula veris','metsmaasikas':'Fragaria vesca','raudrohi':'Achillea millefolium',
+    'sinilill':'Hepatica nobilis','nurmenukk':'Primula veris','harilik nurmenukk':'Primula veris','metsmaasikas':'Fragaria vesca','raudrohi':'Achillea millefolium',
     'valge ristik':'Trifolium repens','punane ristik':'Trifolium pratense','põdrakanep':'Chamaenerion angustifolium',
     'harilik kuslapuu':'Lonicera xylosteum','kuslapuu':'Lonicera xylosteum'
   };
@@ -63,7 +63,7 @@
     analysisId: 0
   };
 
-  function debug(...args){ console.debug('[BioGlow]', ...args); }
+  function debug(...args){ console.debug('[KITA]', ...args); }
   function scrollToId(id){ $(id)?.scrollIntoView({behavior:'smooth', block:'start'}); }
   function setStatus(message, type=''){
     const node = $('status');
@@ -155,7 +155,7 @@
   }
 
   const addressSearch = {id:0, controller:null, cache:new Map()};
-  const addressText = key => window.BioGlowI18n?.t('address.' + key) || ({
+  const addressText = key => window.KITAI18n?.t('address.' + key) || ({
     short:'Sisesta vähemalt 3 märki.', loading:'Otsin aadressi…',
     empty:'Aadressi ei leitud. Lisa linn või vald või vali koht kaardilt.',
     results:'Vali allpool õige aadress.',
@@ -376,15 +376,23 @@
       const seen = new Set();
       if(alias){
         const exact = await gbifMatch(alias).catch(() => null);
-        if(exact){ items.push(exact); seen.add(exact.key); }
+        if(exact){ items.push(exact); seen.add(norm(exact.scientific)); seen.add(exact.key); }
       }
       const suggestions = await gbifSuggest(alias || query).catch(() => []);
+      const queryNorm = norm(alias || query);
       for(const item of suggestions){
         const key = item.key || item.usageKey;
-        if(!key || seen.has(key)) continue;
-        seen.add(key);
-        items.push({key, scientific:item.canonicalName || item.scientificName || query, vernacular:item.vernacularName || ''});
+        const scientific = item.canonicalName || item.scientificName || query;
+        const identity = norm(scientific);
+        if(!key || seen.has(identity)) continue;
+        seen.add(identity); seen.add(key);
+        items.push({key, scientific, vernacular:item.vernacularName || ''});
       }
+      items.sort((a,b) => {
+        const rank = item => [item.scientific, item.vernacular].some(name => norm(name) === queryNorm) ? 0 :
+          [item.scientific, item.vernacular].some(name => norm(name).startsWith(queryNorm)) ? 1 : 2;
+        return rank(a)-rank(b);
+      });
       if(autoPick && items[0]){
         const item = items[0];
         setChosenPlant({...item, common:DISPLAY[item.scientific] || item.vernacular || query});
@@ -418,7 +426,11 @@
       let item = alias ? await gbifMatch(alias).catch(() => null) : null;
       if(!item){
         const suggestions = await gbifSuggest(alias || raw);
-        const first = suggestions[0];
+        const queryNorm = norm(alias || raw);
+        const first = suggestions.find(candidate =>
+          norm(candidate.canonicalName || candidate.scientificName) === queryNorm ||
+          norm(candidate.vernacularName) === queryNorm
+        ) || suggestions[0];
         if(first) item = {key:first.key || first.usageKey, scientific:first.canonicalName || first.scientificName || raw, vernacular:first.vernacularName || ''};
       }
       if(!item) return null;
@@ -476,39 +488,52 @@
     } catch(error){ debug('Foto AI polnud saadaval', error); return 'AI polnud saadaval'; }
   }
 
+  function siteContext(){
+    const value=id => $(id)?.value || '';
+    return {light:value('siteLight'),moisture:value('siteMoisture'),soil:value('siteSoil'),wind:value('siteWind')};
+  }
   function renderResult(selectedCount, nearby, aiText){
     const root = $('verdict');
     const evidence = $('evidenceList');
     const protection = protectedInfo(state.plant.scientific);
     const invasive = isInvasive(state.plant.scientific);
-    const best = nearby[0]?.count || 0;
-    const strength = best > 0 && selectedCount != null ? Math.max(0, Math.min(100, Math.round(selectedCount / best * 100))) : 0;
-    let kind = 'bad', title = 'Ei sobi hästi', label = 'NÕRK SOBIVUS', copy = 'Selle taime kohta ei leitud siin piisavalt kohalikku vaatlustõendit. Vaata allpool tugevama kohaliku andmetoega alternatiive.';
-
+    const site = siteContext();
+    const hasSiteContext = Object.values(site).some(Boolean);
+    let kind = 'maybe', title = 'Vajab kasvukoha kontrolli', label = 'ESIALGNE HINNANG';
+    let copy = 'Läheduses tehtud vaatlused näitavad, et seda liiki on piirkonnas kohatud, kuid ei tõesta sobivust sinu peenrasse. Kontrolli eraldi taime valguse, mullaniiskuse ja mulla vajadusi.';
     if(invasive){
-      title = 'Ära istuta loodusesse'; label = 'HOIATUS'; copy = 'See liik on BioGlow võõr-/invasiivsete liikide kontrollnimekirjas. Kohalike vaatluste olemasolu ei muuda seda tavaliseks istutussoovituseks.';
+      kind = 'bad'; title = 'Ära istuta loodusesse'; label = 'VÕÕR- VÕI INVASIIVSE LIIGI HOIATUS';
+      copy = 'Liik on KITA kontrollnimekirjas. Vaatlused ei muuda seda tavaliseks istutussoovituseks; kontrolli kehtivat Keskkonnaameti teavet.';
     } else if(protection?.category === 'I' || protection?.category === 'II'){
-      kind = 'maybe'; title = 'Kaitsealune liik'; label = `${protection.category} KAITSEKATEGOORIA`; copy = 'BioGlow ei anna I–II kaitsekategooria liigile tavapärast istutussoovitust ega kuva tundlikku lähileviku infot. Ära võta taimi loodusest.';
-    } else if(strength >= 50){
-      kind = 'good'; title = 'Sobib'; label = 'SOBIB'; copy = `Valitud liigi kohta leiti lähialalt ${selectedCount} avalikku vaatlust. Kohalik levik toetab seda valikut.`;
-    } else if(selectedCount > 0){
-      kind = 'maybe'; title = 'Võib sobida'; label = 'VAJAB KONTROLLI'; copy = `Valitud liigi kohta leiti lähialalt ${selectedCount} vaatlust, kuid teistel liikidel on tugevam kohalik andmetugi.`;
+      kind = 'maybe'; title = 'Kaitsealune liik'; label = `${protection.category} KAITSEKATEGOORIA`;
+      copy = 'KITA ei anna I–II kaitsekategooria liigile tavapärast istutussoovitust. Ära võta taimi loodusest.';
+    } else if(selectedCount === null){
+      kind = 'maybe'; title = 'Vaatlusandmeid ei saanud kontrollida'; label = 'PROOVI HILJEM UUESTI';
+      copy = 'GBIF-i vaatlusandmete kontroll ei õnnestunud. Praegu ei saa kohalike vaatluste arvu näidata.';
+    } else if(selectedCount === 0){
+      kind = 'maybe'; title = 'Andmeid pole piisavalt'; label = 'VAJAB LISAKONTROLLI';
+      copy = 'Lähedasi avalikke vaatlusi ei leitud. See ei tähenda, et taim kasvukohas ei sobiks: aiataimede vaatlusi võib andmebaasides vähe olla.';
     }
-
-    const countChip = selectedCount == null ? '<span class="result-chip">lähileviku detail peidetud</span>' : `<span class="result-chip">${selectedCount} vaatlust</span>`;
+    const countChip = selectedCount == null ? '<span class="result-chip">vaatlusarv pole saadaval</span>' : `<span class="result-chip">${selectedCount} kohalikku vaatlust</span>`;
+    const siteNote = hasSiteContext ? '<div class="safety-note">Sinu kasvukohakirjeldus on lisainfo. Praegu ei võrrelda seda automaatselt kinnitatud liigipõhiste vajadustega.</div>' : '';
     root.className = `verdict-card ${kind}`;
     root.innerHTML = `
       <div class="verdict-top"><div class="verdict-icon">${kind === 'good' ? '✓' : kind === 'maybe' ? '?' : '!'}</div><div><small>${esc(label)}</small><h3>${esc(title)}</h3></div></div>
       <div class="selected-result"><b>${esc(state.plant.common)}</b><span>${esc(state.plant.scientific)}</span></div>
       <p>${esc(copy)}</p>
-      <div class="result-chips">${countChip}${selectedCount != null ? `<span class="result-chip">kohalik andmetugi ${strength}%</span>` : ''}${protection ? `<span class="result-chip protect">🛡 ${protection.category} kaitsekategooria</span>` : ''}</div>
-      ${protection ? '<div class="safety-note">Kaitsealust taime ei käsitleta tavapärase istutussoovitusena. Ära võta taimi loodusest.</div>' : ''}`;
+      <div class="result-chips">${countChip}${protection ? `<span class="result-chip protect">🛡 ${protection.category} kaitsekategooria</span>` : ''}</div>
+      ${protection ? '<div class="safety-note">Kaitsealust taime ei käsitleta tavapärase istutussoovitusena. Ära võta taimi loodusest.</div>' : ''}${siteNote}`;
 
     const total = nearby.reduce((sum, item) => sum + item.count, 0);
+    const contextLabels = {light:['Valgus','siteLight'],moisture:['Mullaniiskus','siteMoisture'],soil:['Mullatüüp','siteSoil'],wind:['Tuultele avatus','siteWind']};
+    const contextRows = Object.values(contextLabels).filter(([,id])=>$(id)?.value).map(([label,id]) =>
+      `<div class="evidence-row"><span>⌖</span><div><small>Sinu kasvukohakirjeldus · ${label}</small><b>${esc($(id).selectedOptions?.[0]?.textContent || $(id).value)}</b><p>Lisateave, mitte automaatne sobivusotsus</p></div></div>`
+    ).join('');
     evidence.innerHTML = `
-      <div class="evidence-row"><span>⌖</span><div><small>Kohalikud vaatlused</small><b>${selectedCount == null ? 'Tundlik detail peidetud' : `${selectedCount} valitud liigi vaatlust`}</b><p>${total} avalikku taimekirjet ümbruses</p></div></div>
-      <div class="evidence-row"><span>◎</span><div><small>Foto AI</small><b>${esc(aiText)}</b><p>Visuaalne lisakontekst; ei otsusta tulemust üksinda</p></div></div>
-      <div class="evidence-row"><span>🛡</span><div><small>Kaitsestaatus</small><b>${protection ? `${protection.category} kaitsekategooria` : 'Ei tuvastatud'}</b><p>${invasive ? 'Võõr-/invasiivse liigi hoiatus' : 'Kontrollitud'}</p></div></div>`;
+      <div class="evidence-row"><span>⌖</span><div><small>Kohalikud vaatlused · GBIF</small><b>${selectedCount == null ? 'Tundlik detail peidetud' : `${selectedCount} valitud liigi vaatlust`}</b><p>${total} avalikku taimekirjet piirkonnas. Vaatluskoht ei kirjelda tingimata sinu peenra tingimusi.</p></div></div>
+      ${contextRows}
+      <div class="evidence-row"><span>◎</span><div><small>Foto AI</small><b>${esc(aiText)}</b><p>Visuaalne lisakontekst; ei otsusta sobivust</p></div></div>
+      <div class="evidence-row"><span>🛡</span><div><small>Kaitsestaatus</small><b>${protection ? `${protection.category} kaitsekategooria` : 'Kaitsekategooriat ei tuvastatud'}</b><p>${invasive ? 'Võõr-/invasiivse liigi hoiatus' : 'Kontrolli kehtivat ametlikku teavet'}</p></div></div>`;
   }
 
   function renderAlternatives(nearby){
@@ -522,8 +547,10 @@
       if(seen.has(key)) continue;
       seen.add(key);
       unique.push({...item, simple});
-      if(unique.length === 6) break;
+
     }
+    unique.sort((a,b) => a.simple.localeCompare(b.simple, 'et'));
+    unique.splice(6);
     if(!unique.length){
       root.innerHTML = '<div class="empty-result"><b>Alternatiive ei leitud piisavalt</b><p>Proovi mõnda teist lähedast punkti.</p></div>';
       return;
@@ -531,8 +558,8 @@
     root.innerHTML = unique.map((item, index) => `
       <article class="plant-card">
         <div id="alt-image-${index}" class="plant-media">${item.media ? `<img src="${esc(item.media)}" alt="${esc(item.simple)}" loading="lazy" referrerpolicy="no-referrer">` : '<div class="plant-placeholder">🌿<small>Pilt laadib…</small></div>'}</div>
-        <div class="plant-body"><span class="plant-rank">${index === 0 ? 'TUGEVAM KANDIDAAT' : `KANDIDAAT ${index + 1}`}</span><h4>${esc(item.simple)}</h4><div class="latin">${esc(item.name !== item.scientific ? `${item.name} · ${item.scientific}` : item.scientific)}</div><div class="plant-evidence"><span>⌖</span><span>Kohalikke vaatlusi <b>${item.count}</b></span></div></div>
-      </article>`).join('');
+        <div class="plant-body"><span class="plant-rank">PIIRKONNAS VAATELDUD · KONTROLLI SOBIVUST</span><h4>${esc(item.simple)}</h4><div class="latin">${esc(item.name !== item.scientific ? `${item.name} · ${item.scientific}` : item.scientific)}</div><div class="plant-evidence"><span>⌖</span><span>Kohalikke vaatlusi <b>${item.count}</b></span></div></div>
+      </article>`).join('') + '<p class="data-note">Need on piirkonnas vaadeldud liigid, mitte kinnitatud istutussoovitused. Enne istutamist kontrolli, kas liik on Eestis pärismaine, invasiivne ning sinu kasvukohale sobiv (<a href="https://www.keskkonnaamet.ee/elusloodus-looduskaitse/voorliigid/keelatud-voorliigid-load" target="_blank" rel="noopener">Keskkonnaamet</a>). Liigivalik üksi ei taga tolmeldajate toitu.</p>';
     unique.forEach((item, index) => { if(!item.media) loadAlternativeImage(item, index); });
   }
 
@@ -561,7 +588,7 @@
     }
     hits.sort((a,b) => a.item.count - b.item.count);
     const hit = hits[0];
-    root.innerHTML = `<div class="conservation-card"><div class="conservation-symbol">🛡️</div><div><small>LOODUSKAITSE VÕIMALUS</small><b>${esc(hit.info.common || hit.item.name)}</b><span>${esc(hit.item.scientific)} · III kaitsekategooria</span><p>Seda liiki oli avalikus lähiala päringus ${hit.item.count} vaatlust. BioGlow soovitab toetada olemasolevat kasvukohta, mitte võtta taime loodusest.</p></div></div>`;
+    root.innerHTML = `<div class="conservation-card"><div class="conservation-symbol">🛡️</div><div><small>LOODUSKAITSE VÕIMALUS</small><b>${esc(hit.info.common || hit.item.name)}</b><span>${esc(hit.item.scientific)} · III kaitsekategooria</span><p>Seda liiki oli avalikus lähiala päringus ${hit.item.count} vaatlust. KITA soovitab toetada olemasolevat kasvukohta, mitte võtta taime loodusest.</p></div></div>`;
   }
 
   const average = values => {
@@ -671,11 +698,9 @@
         photoAI(state.file, state.location)
       ]);
       if(analysisId !== state.analysisId) return;
-      if(!nearby.length) throw new Error('Selle koha ümbrusest ei leitud piisavalt avalikke taimevaatlusi.');
-
       const protection = protectedInfo(state.plant.scientific);
       const sensitive = protection?.category === 'I' || protection?.category === 'II';
-      const selectedCount = sensitive ? null : await selectedPlantCount(state.plant.key, state.location.lat, state.location.lon).catch(() => 0);
+      const selectedCount = sensitive ? null : await selectedPlantCount(state.plant.key, state.location.lat, state.location.lon).catch(() => null);
       if(analysisId !== state.analysisId) return;
 
       renderResult(selectedCount, nearby, aiText);
@@ -685,7 +710,7 @@
       setStatus('Analüüs valmis.', 'ok');
       scrollToId('results');
     } catch(error){
-      console.error('[BioGlow] Analüüs ebaõnnestus', error);
+      console.error('[KITA] Analüüs ebaõnnestus', error);
       setStatus(error.message || 'Analüüs ebaõnnestus. Proovi uuesti.', 'error');
       $('plants').innerHTML = '<div class="empty-result"><b>Soovitusi ei saanud laadida</b><p>Proovi uuesti või vali teine punkt.</p></div>';
     } finally {
@@ -707,6 +732,7 @@
     cancelAddressSearch(true);
     state.analysisId += 1;
     clearPlant();
+    ['siteLight','siteMoisture','siteSoil','siteWind'].forEach(id => { if($(id)) $(id).value=''; });
     removePhoto();
     state.location = null;
     if(state.map && state.marker){ state.map.removeLayer(state.marker); state.marker = null; }
@@ -765,7 +791,7 @@
       initMap();
       debug('FINAL versioon käivitus');
     } catch(error){
-      console.error('[BioGlow] Käivitamise viga', error);
+      console.error('[KITA] Käivitamise viga', error);
       setStatus('Lehe käivitamisel tekkis viga. Värskenda lehte.', 'error');
     }
   }
