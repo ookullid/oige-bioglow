@@ -104,7 +104,7 @@
       pollinator:isFlower ? 'kõrge' : isTree ? 'keskmine' : 'teadmata',
       maintenance:isTree ? 'madal kuni keskmine' : 'keskmine',
       size:isTree ? 'võib kujuneda suureks puuks; kontrolli liigi täpset kasvusuurust' : 'kontrolli liigi täpset kasvusuurust',
-      safety:'BioGlow prototüübil puudub selle liigi kohta kontrollitud ohutusmärkus; enne istutamist kontrolli usaldusväärsest allikast.'
+      safety:'KITA prototüübil puudub selle liigi kohta kontrollitud ohutusmärkus; enne istutamist kontrolli usaldusväärsest allikast.'
     };
   }
 
@@ -122,13 +122,13 @@
   function biodiversityModel(a=currentAnalysis()){
     const t = traitFor(a.plant);
     const risky = invasiveNames.some(n => `${a.plant.common} ${a.plant.scientific}`.toLowerCase().includes(n));
-    if(risky) return {score:1,label:'Madal',text:'Probleemse võõrliigi puhul ei käsitle BioGlow istutamist elurikkust toetava valikuna.'};
+    if(risky) return {score:1,label:'Madal',text:'Probleemse võõrliigi puhul ei käsitle KITA istutamist elurikkust toetava valikuna.'};
     let score=2;
     if(t.pollinator==='kõrge') score+=2; else if(t.pollinator==='keskmine') score+=1;
     if(a.score != null && a.score >= 25) score+=1;
     score=Math.max(1,Math.min(5,score));
     const label = score>=4 ? 'Kõrge potentsiaal' : score===3 ? 'Keskmine potentsiaal' : 'Madal/ebaselge potentsiaal';
-    return {score,label,text:'See on BioGlow prototüübi hinnang, mis ühendab kohaliku vaatlusandme ja lihtsad liigipõhised tunnused.'};
+    return {score,label,text:'See on KITA prototüübi hinnang, mis ühendab kohaliku vaatlusandme ja lihtsad liigipõhised tunnused.'};
   }
 
   function seasonModel(a=currentAnalysis()){
@@ -211,12 +211,12 @@
     $('savedDetail').innerHTML = `<div class="feature-card"><h3>${esc(item.plant_name)}</h3><div class="latin">${esc(item.scientific_name || '')}</div><div class="score-line"><span>Tulemus</span><strong>${esc(item.verdict || '–')}</strong></div><div class="score-line"><span>Asukoht</span><strong>${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}</strong></div>${item.score != null ? `<div class="score-line"><span>Kohalik andmetugi</span><strong>${item.score}%</strong></div>` : ''}<div class="explain-box">${Object.entries(d.env || {}).map(([key,v]) => `<div class="explain-item"><b>${esc(key)}</b><span>${esc(v?.value || '')} ${esc(v?.detail || '')}</span></div>`).join('')}</div></div>`;
   }
 
-  function savedShareText(item){ return item ? `BioGlow analüüs: ${item.plant_name} — ${item.verdict || 'tulemus'}\nAsukoht: ${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}${item.score != null ? `\nKohalik andmetugi: ${item.score}%` : ''}` : ''; }
+  function savedShareText(item){ return item ? `KITA analüüs: ${item.plant_name} — ${item.verdict || 'tulemus'}\nAsukoht: ${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}${item.score != null ? `\nKohalik andmetugi: ${item.score}%` : ''}` : ''; }
 
   async function shareText(text){
     if(!text) return;
     try{
-      if(navigator.share) await navigator.share({title:'BioGlow analüüs',text});
+      if(navigator.share) await navigator.share({title:'KITA analüüs',text});
       else { await navigator.clipboard.writeText(text); alert('Kokkuvõte kopeeriti.'); }
     } catch(error){ if(error?.name !== 'AbortError') console.error(error); }
   }
@@ -225,7 +225,7 @@
     const a = requireAnalysis(); if(!a) return;
     const c = confidence(a);
     const bio=biodiversityModel(a);
-    shareText(`BioGlow analüüs: ${a.plant.common}${a.plant.scientific ? ` (${a.plant.scientific})` : ''}\nTulemus: ${a.verdict}${a.score != null ? `\nKohalik andmetugi: ${a.score}%` : ''}\nUsaldusaste: ${c.label}\nElurikkuse potentsiaal: ${bio.label}${a.coords ? `\nAsukoht: ${a.coords.lat.toFixed(5)}, ${a.coords.lon.toFixed(5)}` : ''}`);
+    shareText(`KITA analüüs: ${a.plant.common}${a.plant.scientific ? ` (${a.plant.scientific})` : ''}\nTulemus: ${a.verdict}${a.score != null ? `\nKohalik andmetugi: ${a.score}%` : ''}\nUsaldusaste: ${c.label}\nElurikkuse potentsiaal: ${bio.label}${a.coords ? `\nAsukoht: ${a.coords.lat.toFixed(5)}, ${a.coords.lon.toFixed(5)}` : ''}`);
   }
 
   async function speciesMatch(name){
@@ -281,7 +281,7 @@
   function renderExplain(){
     const root = $('explainResult'); const a = requireAnalysis(); if(!a){ root.innerHTML = ''; return; }
     const c = confidence(a); const lines = simpleExplanation(a);
-    root.innerHTML = `<div class="feature-card"><div class="confidence ${c.cls}">Usaldusaste: ${c.label}</div><p>${esc(c.text)}</p><h3>Miks BioGlow nii ütles?</h3><div class="explain-box">${lines.map(x=>`<div class="explain-item"><b>${esc(x.label)}</b><span>${esc(x.text)}</span></div>`).join('')}</div><p><b>Kokkuvõte:</b> ${esc(a.verdict)}. BioGlow ühendab kohaliku leviku ja keskkonnaandmed; ükski kiht ei tõesta üksi, et taim kindlasti kasvab.</p></div>`;
+    root.innerHTML = `<div class="feature-card"><div class="confidence ${c.cls}">Usaldusaste: ${c.label}</div><p>${esc(c.text)}</p><h3>Miks KITA nii ütles?</h3><div class="explain-box">${lines.map(x=>`<div class="explain-item"><b>${esc(x.label)}</b><span>${esc(x.text)}</span></div>`).join('')}</div><p><b>Kokkuvõte:</b> ${esc(a.verdict)}. KITA ühendab kohaliku leviku ja keskkonnaandmed; ükski kiht ei tõesta üksi, et taim kindlasti kasvab.</p></div>`;
   }
 
   function renderWarning(){
@@ -290,11 +290,11 @@
     const invasive = invasiveNames.some(n => text.includes(n));
     const protectedHit = /kaitsekategooria|kaitsealune/.test(text);
     const trait=traitFor(p);
-    root.innerHTML = `${invasive ? '<div class="warning-box danger"><b>⚠️ Invasiivse või probleemse liigi hoiatus</b><p>Seda taime ei tohiks loodusesse istutada. Kontrolli enne istutamist ametlikke Eesti võõrliikide nõudeid.</p></div>' : protectedHit ? '<div class="warning-box"><b>🛡️ Kaitsealuse liigi hoiatus</b><p>Ära võta kaitsealuseid taimi loodusest ega jaga tundlikke leiukohti. BioGlow ei käsitle neid tavapärase istutussoovitusena.</p></div>' : '<div class="warning-box"><b>✓ Eraldi kaitse- või invasiivsushäiret ei tuvastatud</b><p>See ei asenda ametlikku liigikaitse kontrolli.</p></div>'}<div class="warning-box soft"><b>Ohutuse prototüübi märkus</b><p>${esc(trait.safety)}</p></div>`;
+    root.innerHTML = `${invasive ? '<div class="warning-box danger"><b>⚠️ Invasiivse või probleemse liigi hoiatus</b><p>Seda taime ei tohiks loodusesse istutada. Kontrolli enne istutamist ametlikke Eesti võõrliikide nõudeid.</p></div>' : protectedHit ? '<div class="warning-box"><b>🛡️ Kaitsealuse liigi hoiatus</b><p>Ära võta kaitsealuseid taimi loodusest ega jaga tundlikke leiukohti. KITA ei käsitle neid tavapärase istutussoovitusena.</p></div>' : '<div class="warning-box"><b>✓ Eraldi kaitse- või invasiivsushäiret ei tuvastatud</b><p>See ei asenda ametlikku liigikaitse kontrolli.</p></div>'}<div class="warning-box soft"><b>Ohutuse prototüübi märkus</b><p>${esc(trait.safety)}</p></div>`;
   }
 
   function sourcesHtml(){
-    return `<div class="source-list"><div class="source-row"><div><b>GBIF</b><small>Liikide nimed, fotod ja avalikud vaatlused</small></div><a href="https://www.gbif.org" target="_blank" rel="noopener">Ava ↗</a></div><div class="source-row"><div><b>Open-Meteo</b><small>Ilma- ja keskkonna mudelandmed</small></div><a href="https://open-meteo.com" target="_blank" rel="noopener">Ava ↗</a></div><div class="source-row"><div><b>SoilGrids</b><small>Mulla pH ja lõimise mudel</small></div><a href="https://soilgrids.org" target="_blank" rel="noopener">Ava ↗</a></div><div class="source-row"><div><b>Maa- ja Ruumiamet</b><small>Mullastiku ja maakatte kaardikihid</small></div><a href="https://geoportaal.maaamet.ee" target="_blank" rel="noopener">Ava ↗</a></div><div class="source-row"><div><b>eElurikkus / PlutoF</b><small>Eesti elurikkuse täiendavad allikad; BioGlow näitab need eraldi, kui integratsioon on aktiivne</small></div><a href="https://elurikkus.ee" target="_blank" rel="noopener">Ava ↗</a></div></div>`;
+    return `<div class="source-list"><div class="source-row"><div><b>GBIF</b><small>Liikide nimed, fotod ja avalikud vaatlused</small></div><a href="https://www.gbif.org" target="_blank" rel="noopener">Ava ↗</a></div><div class="source-row"><div><b>Open-Meteo</b><small>Ilma- ja keskkonna mudelandmed</small></div><a href="https://open-meteo.com" target="_blank" rel="noopener">Ava ↗</a></div><div class="source-row"><div><b>SoilGrids</b><small>Mulla pH ja lõimise mudel</small></div><a href="https://soilgrids.org" target="_blank" rel="noopener">Ava ↗</a></div><div class="source-row"><div><b>Maa- ja Ruumiamet</b><small>Mullastiku ja maakatte kaardikihid</small></div><a href="https://geoportaal.maaamet.ee" target="_blank" rel="noopener">Ava ↗</a></div><div class="source-row"><div><b>eElurikkus / PlutoF</b><small>Eesti elurikkuse täiendavad allikad; KITA näitab need eraldi, kui integratsioon on aktiivne</small></div><a href="https://elurikkus.ee" target="_blank" rel="noopener">Ava ↗</a></div></div>`;
   }
 
   async function initFeatureMap(){
@@ -337,13 +337,13 @@
     const root=$('avoidView'); const a=requireAnalysis(); if(!a){root.innerHTML='';return;}
     const risk=riskModel(a); const p=a.plant; const isInv=invasiveNames.some(n=>`${p.common} ${p.scientific}`.toLowerCase().includes(n));
     const items=[];
-    if(isInv) items.push('Ära istuta valitud liiki loodusesse: BioGlow tuvastas probleemse võõrliigi hoiatuse.');
+    if(isInv) items.push('Ära istuta valitud liiki loodusesse: KITA tuvastas probleemse võõrliigi hoiatuse.');
     if(/Ei sobi/i.test(a.verdict)) items.push(`Valitud ${p.common} ei saanud selles kohas tugevat sobivushinnangut.`);
     if(risk.drought==='kõrgem') items.push('Väldi väga suure veevajadusega taimi, kui kastmist ei ole võimalik tagada.');
     if(risk.flood==='kõrgem') items.push('Väldi liike, mis ei talu liigniiskust või ajutist üleujutust.');
     items.push('Väldi kaitsealuste taimede loodusest ümberistutamist.');
     items.push('Väldi tundmatu päritoluga invasiivseid või kiiresti levivaid aiataimi looduse läheduses.');
-    root.innerHTML=`<div class="feature-card"><h3>Mida selles kohas vältida?</h3><ul class="avoid-list">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="share-note">See on BioGlow prototüübi riskiloend, mitte ametlik aiandus- või looduskaitse otsus.</p></div>`;
+    root.innerHTML=`<div class="feature-card"><h3>Mida selles kohas vältida?</h3><ul class="avoid-list">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="share-note">See on KITA prototüübi riskiloend, mitte ametlik aiandus- või looduskaitse otsus.</p></div>`;
   }
 
   function renderConsidered(){
@@ -357,7 +357,7 @@
       ['Kaitsestaatus',a.evidence.find(x=>/Kaitsestaatus/i.test(x.title))?.value||'kontrollitud'],
       ['Kuivusrisk',risk.drought],['Liigniiskuse risk',risk.flood],['Elurikkuse potentsiaal',`${bio.score}/5`],['Usaldusaste',c.label]
     ];
-    root.innerHTML=`<div class="feature-card"><h3>Mida BioGlow arvestas?</h3><div class="explain-box">${rows.map(([k,v])=>`<div class="explain-item"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('')}</div></div>`;
+    root.innerHTML=`<div class="feature-card"><h3>Mida KITA arvestas?</h3><div class="explain-box">${rows.map(([k,v])=>`<div class="explain-item"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('')}</div></div>`;
   }
 
   async function loadHistoryMap(){
@@ -378,7 +378,7 @@
   function renderFreshness(){
     const root=$('freshnessView'); const a=requireAnalysis(); if(!a){root.innerHTML='';return;}
     const now=new Date();
-    root.innerHTML=`<div class="feature-card"><h3>Andmete värskus</h3><div class="explain-box"><div class="explain-item"><b>BioGlow analüüs</b><span>${now.toLocaleString('et-EE')}</span></div><div class="explain-item"><b>GBIF vaatlused</b><span>Päriti analüüsi ajal; GBIF kirjed võivad pärineda eri aastatest.</span></div><div class="explain-item"><b>Open-Meteo</b><span>Päriti analüüsi ajal kasutatud mudelist.</span></div><div class="explain-item"><b>SoilGrids</b><span>Staatilisem mullamudel; ei ole reaalajas mõõtmine.</span></div><div class="explain-item"><b>MaRu kihid</b><span>Kaardikiht kuvatakse teenusest; uuendussagedus sõltub allikast.</span></div></div><p class="share-note">BioGlow eristab reaalajas päringuid, mudelandmeid ja ajaloolisi vaatlusandmeid.</p></div>`;
+    root.innerHTML=`<div class="feature-card"><h3>Andmete värskus</h3><div class="explain-box"><div class="explain-item"><b>KITA analüüs</b><span>${now.toLocaleString('et-EE')}</span></div><div class="explain-item"><b>GBIF vaatlused</b><span>Päriti analüüsi ajal; GBIF kirjed võivad pärineda eri aastatest.</span></div><div class="explain-item"><b>Open-Meteo</b><span>Päriti analüüsi ajal kasutatud mudelist.</span></div><div class="explain-item"><b>SoilGrids</b><span>Staatilisem mullamudel; ei ole reaalajas mõõtmine.</span></div><div class="explain-item"><b>MaRu kihid</b><span>Kaardikiht kuvatakse teenusest; uuendussagedus sõltub allikast.</span></div></div><p class="share-note">KITA eristab reaalajas päringuid, mudelandmeid ja ajaloolisi vaatlusandmeid.</p></div>`;
   }
 
   function buildExtraSnapshot(a=currentAnalysis()){
@@ -399,11 +399,11 @@
     const jsPDF=window.jspdf?.jsPDF;
     if(!jsPDF){ window.print(); return; }
     const doc=new jsPDF({unit:'mm',format:'a4'}); let y=18;
-    doc.setFontSize(20); doc.text('BioGlow analüüsiraport',18,y); y+=10;
+    doc.setFontSize(20); doc.text('KITA analüüsiraport',18,y); y+=10;
     doc.setFontSize(10); doc.text(`Koostatud: ${new Date().toLocaleString('et-EE')}`,18,y); y+=8;
     reportLines(a).forEach(([k,v])=>{ doc.setFont(undefined,'bold'); doc.text(`${k}:`,18,y); doc.setFont(undefined,'normal'); const lines=doc.splitTextToSize(String(v||'–'),150); doc.text(lines,55,y); y+=Math.max(7,lines.length*5); if(y>275){doc.addPage();y=18;} });
-    y+=3; doc.setFontSize(9); const note='Märkus: BioGlow on prototüüp. Keskkonna- ja liigihinnangud ei asenda ametlikku looduskaitse, aianduse ega ohutuse nõuannet.'; doc.text(doc.splitTextToSize(note,175),18,y);
-    doc.save(`BioGlow-${(a.plant.common||'raport').replace(/[^a-zA-Z0-9õäöüÕÄÖÜ_-]+/g,'-')}.pdf`);
+    y+=3; doc.setFontSize(9); const note='Märkus: KITA on prototüüp. Keskkonna- ja liigihinnangud ei asenda ametlikku looduskaitse, aianduse ega ohutuse nõuannet.'; doc.text(doc.splitTextToSize(note,175),18,y);
+    doc.save(`KITA-${(a.plant.common||'raport').replace(/[^a-zA-Z0-9õäöüÕÄÖÜ_-]+/g,'-')}.pdf`);
   }
 
   async function submitFeedback(rating){
@@ -416,7 +416,7 @@
   }
 
   function renderFeedback(){
-    $('feedbackView').innerHTML=`<div class="feature-card"><h3>Kas BioGlow soovitus tundus mõistlik?</h3><p>Tagasiside aitab prototüüpi testida. See ei muuda automaatselt teadusandmeid.</p><textarea id="feedbackComment" class="feature-textarea" placeholder="Soovi korral kirjuta, mis oli hea või vale…"></textarea><div class="feature-actions"><button class="mini-btn primary" id="feedbackYes">👍 Tundus õige</button><button class="mini-btn" id="feedbackNo">👎 Tundus vale</button></div><div id="feedbackStatus" class="share-note"></div></div>`;
+    $('feedbackView').innerHTML=`<div class="feature-card"><h3>Kas KITA soovitus tundus mõistlik?</h3><p>Tagasiside aitab prototüüpi testida. See ei muuda automaatselt teadusandmeid.</p><textarea id="feedbackComment" class="feature-textarea" placeholder="Soovi korral kirjuta, mis oli hea või vale…"></textarea><div class="feature-actions"><button class="mini-btn primary" id="feedbackYes">👍 Tundus õige</button><button class="mini-btn" id="feedbackNo">👎 Tundus vale</button></div><div id="feedbackStatus" class="share-note"></div></div>`;
     $('feedbackYes').onclick=()=>submitFeedback('helpful'); $('feedbackNo').onclick=()=>submitFeedback('not_helpful');
   }
 
@@ -430,7 +430,7 @@
     let banner=$('offlineBanner');
     if(!banner){banner=document.createElement('div');banner.id='offlineBanner';banner.className='offline-banner hidden';document.body.appendChild(banner);}
     if(navigator.onLine){banner.classList.add('hidden');}
-    else {banner.textContent='Oled offline. BioGlow näitab viimati salvestatud lehe- ja analüüsiandmeid; uued veebipäringud ei pruugi töötada.';banner.classList.remove('hidden');}
+    else {banner.textContent='Oled offline. KITA näitab viimati salvestatud lehe- ja analüüsiandmeid; uued veebipäringud ei pruugi töötada.';banner.classList.remove('hidden');}
   }
 
   function persistSnapshot(){
@@ -446,17 +446,17 @@
     if($('featurePanel')) return;
     const launcher = document.createElement('div');
     launcher.className='feature-launcher';
-    launcher.innerHTML='<button class="btn secondary" id="growHereBtn">🌱 Mis siin kasvaks?</button><button class="btn secondary" id="compareBtn">⇄ Võrdle taimi</button><button class="btn primary" id="myBioGlowBtn">✦ Minu BioGlow</button>';
+    launcher.innerHTML='<button class="btn secondary" id="growHereBtn">🌱 Mis siin kasvaks?</button><button class="btn secondary" id="compareBtn">⇄ Võrdle taimi</button><button class="btn primary" id="myKITABtn">✦ Minu KITA</button>';
     document.body.appendChild(launcher);
 
     const panel = document.createElement('div');
     panel.id='featurePanel'; panel.className='feature-panel hidden';
-    panel.innerHTML=`<div class="feature-shell"><button class="feature-close" id="featureClose">×</button><div class="feature-topline"><div><span class="eyebrow">BIOGLOW+</span><h2 id="featureTitle">Minu BioGlow</h2></div><button class="mini-btn" id="modeToggle">Koolirežiim</button></div><div class="feature-tabs"><button class="feature-tab active" data-tab="saved">Minu analüüsid</button><button class="feature-tab" data-tab="history">Ajalugu kaardil</button><button class="feature-tab" data-tab="favorites">Lemmikud</button><button class="feature-tab" data-tab="compare">Võrdlus</button><button class="feature-tab" data-tab="grow">Mis siin kasvaks?</button><button class="feature-tab" data-tab="explain">Miks?</button><button class="feature-tab" data-tab="season">Kasvukoha lisahinnang</button><button class="feature-tab" data-tab="avoid">Mida vältida?</button><button class="feature-tab expert-only" data-tab="layers">Foto + kaart</button><button class="feature-tab expert-only" data-tab="considered">Mida arvestati?</button><button class="feature-tab expert-only" data-tab="freshness">Andmete värskus</button><button class="feature-tab expert-only" data-tab="sources">Andmeallikad</button><button class="feature-tab" data-tab="warning">Hoiatused</button><button class="feature-tab" data-tab="feedback">Tagasiside</button></div>
+    panel.innerHTML=`<div class="feature-shell"><button class="feature-close" id="featureClose">×</button><div class="feature-topline"><div><span class="eyebrow">BIOGLOW+</span><h2 id="featureTitle">Minu KITA</h2></div><button class="mini-btn" id="modeToggle">Koolirežiim</button></div><div class="feature-tabs"><button class="feature-tab active" data-tab="saved">Minu analüüsid</button><button class="feature-tab" data-tab="history">Ajalugu kaardil</button><button class="feature-tab" data-tab="favorites">Lemmikud</button><button class="feature-tab" data-tab="compare">Võrdlus</button><button class="feature-tab" data-tab="grow">Mis siin kasvaks?</button><button class="feature-tab" data-tab="explain">Miks?</button><button class="feature-tab" data-tab="season">Kasvukoha lisahinnang</button><button class="feature-tab" data-tab="avoid">Mida vältida?</button><button class="feature-tab expert-only" data-tab="layers">Foto + kaart</button><button class="feature-tab expert-only" data-tab="considered">Mida arvestati?</button><button class="feature-tab expert-only" data-tab="freshness">Andmete värskus</button><button class="feature-tab expert-only" data-tab="sources">Andmeallikad</button><button class="feature-tab" data-tab="warning">Hoiatused</button><button class="feature-tab" data-tab="feedback">Tagasiside</button></div>
     <section class="feature-view" data-view="saved"><div class="feature-toolbar"><button class="mini-btn primary" id="saveCurrentBtn">Salvesta praegune analüüs</button><button class="mini-btn" id="shareCurrentBtn">Jaga tulemust</button><button class="mini-btn" id="pdfBtn">PDF raport</button></div><div class="feature-grid"><div id="savedList"></div><div id="savedDetail"></div></div></section>
     <section class="feature-view hidden" data-view="history"><div id="historyMapWrap"></div></section>
     <section class="feature-view hidden" data-view="favorites"><div class="feature-toolbar"><button class="mini-btn primary" id="favoriteCurrentBtn">★ Lisa valitud taim lemmikuks</button></div><div id="favoritesList" class="feature-grid"></div></section>
     <section class="feature-view hidden" data-view="compare"><p>Võrdle 2–3 taime sama koha kohalike vaatlusandmete põhjal.</p><div class="feature-toolbar"><input id="cmp1" class="feature-input" placeholder="nt kadakas"><input id="cmp2" class="feature-input" placeholder="nt tamm"><input id="cmp3" class="feature-input" placeholder="soovi korral kolmas"><button class="mini-btn primary" id="runCompareBtn">Võrdle</button></div><div id="compareResult" class="compare-result"></div></section>
-    <section class="feature-view hidden" data-view="grow"><p>BioGlow otsib valitud koha ümbrusest tugevama kohaliku vaatlusandmega taimi. Tuntud probleemsed võõrliigid filtreeritakse välja.</p><button class="mini-btn primary" id="runGrowBtn">Otsi kohalikke kandidaate</button><div id="growHereResult" class="native-grid" style="margin-top:14px"></div></section>
+    <section class="feature-view hidden" data-view="grow"><p>KITA otsib valitud koha ümbrusest tugevama kohaliku vaatlusandmega taimi. Tuntud probleemsed võõrliigid filtreeritakse välja.</p><button class="mini-btn primary" id="runGrowBtn">Otsi kohalikke kandidaate</button><div id="growHereResult" class="native-grid" style="margin-top:14px"></div></section>
     <section class="feature-view hidden" data-view="explain"><div id="explainResult"></div></section>
     <section class="feature-view hidden" data-view="season"><div id="seasonRiskView"></div></section>
     <section class="feature-view hidden" data-view="avoid"><div id="avoidView"></div></section>
@@ -475,7 +475,7 @@
     $('featureClose').onclick=closePanel; panel.addEventListener('click',e=>{if(e.target===panel) closePanel();});
     document.querySelectorAll('.feature-tab').forEach(btn=>btn.onclick=()=>switchTab(btn.dataset.tab));
     $('saveCurrentBtn').onclick=saveCurrent; $('shareCurrentBtn').onclick=shareCurrent; $('favoriteCurrentBtn').onclick=togglePlantFavorite; $('runCompareBtn').onclick=comparePlants; $('runGrowBtn').onclick=whatGrowsHere; $('pdfBtn').onclick=generatePdf;
-    $('myBioGlowBtn').onclick=()=>openPanel('saved'); $('growHereBtn').onclick=()=>openPanel('grow'); $('compareBtn').onclick=()=>openPanel('compare');
+    $('myKITABtn').onclick=()=>openPanel('saved'); $('growHereBtn').onclick=()=>openPanel('grow'); $('compareBtn').onclick=()=>openPanel('compare');
     $('modeToggle').onclick=()=>setMode(document.body.dataset.bioglowMode==='expert'?'school':'expert');
     setMode(localStorage.getItem('bioglow_mode')||'school');
   }
@@ -516,7 +516,7 @@
   }
 
   function registerOffline(){
-    if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(err=>console.debug('[BioGlow offline]',err)); }
+    if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(err=>console.debug('[KITA offline]',err)); }
     window.addEventListener('online',renderOfflineState); window.addEventListener('offline',renderOfflineState); renderOfflineState();
   }
 
