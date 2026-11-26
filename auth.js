@@ -312,6 +312,7 @@
     const longitude = Number(lon);
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
     closeAnalysesModal();
+    if(window.KITASelectLocation){window.KITASelectLocation(latitude,longitude);return;}
     const mapEl = $('map');
     mapEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     const coord = $('coordText');
