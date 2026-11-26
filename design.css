@@ -1,0 +1,72 @@
+/* KITA visual system — applied after the original feature styles. */
+:root{--bg:#f4f6ef;--card:#fff;--ink:#1d3025;--muted:#58695f;--line:#dce5d8;--green:#316747;--green2:#497e55;--dark:#173c2b;--lime:#d8efa2;--soft:#eef3e8;--shadow:0 6px 24px rgba(27,58,39,.06)}
+body{background:var(--bg);line-height:1.55}
+.wrap{width:min(1180px,calc(100% - 48px))}
+.topbar{background:rgba(250,251,246,.96);border-bottom:1px solid var(--line)}
+.topbar-inner{min-height:76px;gap:12px}
+.brand{font-size:24px;letter-spacing:-.04em;gap:9px}
+.brand-dot{width:39px;height:39px;border-radius:12px;background:var(--dark)}
+.version{font-size:9px;letter-spacing:.08em;background:#e6eddb;padding:3px 7px;border-radius:6px;color:#365642}
+.nav-actions{align-items:center;justify-content:flex-end;gap:4px}
+.btn{border-radius:11px;font-weight:700;line-height:1.4}
+.btn.ghost{padding:9px 10px}
+.btn.primary{background:var(--dark);box-shadow:none}
+.btn.secondary{border-color:var(--line)}
+.btn:focus-visible,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #67965c;outline-offset:3px}
+.hero{margin-top:32px;padding:clamp(28px,5vw,62px);border-radius:30px;grid-template-columns:1.3fr .7fr;gap:44px;background:linear-gradient(125deg,#183e2d 0%,#28583b 100%);box-shadow:none;isolation:isolate}
+.hero:after{width:650px;height:650px;right:-260px;top:-210px;background:repeating-radial-gradient(ellipse at center,transparent 0 36px,#d8efa20d 37px 38px,transparent 39px 54px);pointer-events:none}
+.hero h1{font-size:clamp(42px,5.5vw,72px);line-height:1.04;letter-spacing:-.055em;font-weight:780;max-width:660px}
+.hero p{font-size:17px;max-width:540px;color:#e0e9dd}
+.hero .btn.primary{background:#d8efa2;color:#1b3a28;padding:14px 20px}
+.hero .btn.primary:hover{background:#ebf9c8}
+.hero .hero-secondary{background:transparent;padding:14px 18px}
+.hero-stats{gap:10px;align-content:center}
+.hero-stat{padding:18px 16px;gap:14px;border:1px solid #ffffff26;background:#ffffff0b;border-radius:16px;min-width:0}
+.hero-stat>span{width:40px;height:40px;flex-shrink:0;border-radius:12px;background:#d8efa2;font-size:13px;font-weight:800}
+.hero-stat small{color:#c3d6c6;letter-spacing:.11em;font-size:10px}
+.hero-stat b{font-size:15px;font-weight:650;line-height:1.45}
+.eyebrow,.step{letter-spacing:.12em;font-size:11px}
+.tool-section{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:22px;padding:18px 22px;background:#e9efe2;border:1px solid var(--line);border-radius:18px}
+.tool-section h2{font-size:17px;letter-spacing:-.02em;margin:2px 0 0}
+#kitaTools .feature-launcher{position:static;inset:auto;max-width:none;gap:8px;justify-content:flex-start}
+#kitaTools .feature-launcher .btn{box-shadow:none}
+.analysis-heading{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-top:42px}
+.analysis-heading h2{font-size:clamp(24px,3vw,34px);line-height:1.2;letter-spacing:-.04em;margin:4px 0}
+.analysis-heading p{color:var(--muted);font-size:13px;margin:0 0 5px}
+.workspace{margin-top:15px;gap:20px;align-items:start;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr)}
+.panel{border-radius:20px;box-shadow:var(--shadow);min-width:0}
+.controls-panel,.map-panel,.results,.how{padding:24px}
+.panel-head h2,.results-head h2{font-weight:750;font-size:24px}
+.panel-icon{font-size:21px}
+.muted{color:var(--muted)}
+.plant-input{border-radius:11px;background:#fafbf8;font-size:15px;min-height:46px}
+.plant-input:focus{border-color:#67965c;box-shadow:0 0 0 3px #dcebd4}
+.quick-plants button{background:#f3f6ed;border-color:#e0e7d8;font-weight:650}
+.site-details{margin-top:12px;border:1px solid var(--line);border-radius:13px;padding:12px 14px;background:#f8faf5}
+.site-details summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--green)}
+.site-details .site-context{border:0;background:transparent;margin:12px 0 0;padding:0}
+.site-context legend{font-size:13px}
+.site-context select{width:100%;font:inherit;font-size:14px}
+.drop-zone{border-radius:14px;background:#f8faf5}
+.map-panel #map{height:clamp(440px,58vh,660px);border-radius:13px}
+.map-foot{font-size:12px;color:var(--muted);gap:8px}
+.results,.how{margin-top:24px}
+.empty-result{background:#f8faf5;border-radius:15px}
+.evidence-row p,.env-card p,.data-note,.how-grid p{font-size:12px;line-height:1.5}
+.evidence-row b{font-size:14px}
+.env-card small{font-size:11px}
+.plant-card,.env-card,.how-grid article{border-radius:15px}
+.plant-body .latin{font-size:12px}
+.plant-body .plant-evidence{font-size:12px}
+.account-menu{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow)}
+.account-avatar{background:#e6efe0}
+.account-menu-copy span{color:var(--muted)}
+.auth-card,.feature-shell,.lab-shell{border-radius:20px}
+.kita-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid var(--line);padding:22px 0 34px;margin-top:26px;color:var(--muted);font-size:13px}
+.kita-footer strong{color:var(--ink);font-size:18px}
+.kita-footer p{margin:0;max-width:510px}
+#analyze,#results,#how{scroll-margin-top:100px}
+@media(min-width:1000px){.workspace .map-panel{position:sticky;top:96px}}
+@media(max-width:900px){.wrap{width:calc(100% - 32px)}.hero{grid-template-columns:1fr;gap:24px}.hero-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.hero-stat{padding:12px;gap:8px;align-items:flex-start}.hero-stat b{font-size:13px}.workspace{grid-template-columns:1fr}.tool-section{align-items:flex-start;flex-direction:column}.nav-actions{flex-wrap:wrap}.map-panel #map{height:440px}}
+@media(max-width:620px){.wrap{width:calc(100% - 24px)}.topbar-inner{flex-wrap:wrap;padding:9px 0;gap:7px;min-height:0}.nav-actions{width:100%;justify-content:flex-start;gap:3px}.nav-actions .ghost{display:inline-flex;align-items:center}.nav-actions .btn{font-size:12px;padding:7px 8px;white-space:nowrap}.nav-actions .account-btn{gap:4px}.account-avatar{width:22px;height:22px}.account-menu{width:min(270px,calc(100vw - 30px));right:0}.hero{margin-top:15px;padding:28px 22px;border-radius:20px}.hero h1{font-size:43px}.hero p{font-size:15px}.hero-stats{grid-template-columns:1fr}.hero-stat{align-items:center}.hero-stat b{font-size:14px}.hero-actions{gap:8px}.hero-actions .btn{padding:12px 13px}.tool-section{padding:16px;gap:12px}.tool-section #kitaTools{width:100%}#kitaTools .feature-launcher{display:grid;grid-template-columns:1fr;width:100%}.analysis-heading{margin-top:28px;display:block}.analysis-heading p{margin:4px 0}.controls-panel,.map-panel,.results,.how{padding:17px;border-radius:16px}.workspace{gap:12px}.map-panel #map{height:340px}.kita-footer{align-items:flex-start;flex-direction:column}#analyze,#results,#how{scroll-margin-top:150px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}body.motion-ready .motion-reveal{opacity:1;transform:none;transition:none}.btn,.plant-card,.hero-stat{transition:none}}
