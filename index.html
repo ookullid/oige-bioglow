@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="features.css?v=2">
   <link rel="stylesheet" href="lab.css?v=1">
   <link rel="stylesheet" href="design.css?v=1">
-  <link rel="stylesheet" href="pages.css?v=2">
+  <link rel="stylesheet" href="pages.css?v=3">
 </head>
 <body>
 <header class="topbar">
@@ -204,7 +204,7 @@
   </div>
   <div data-page="garden" id="garden" hidden>
     <section class="wrap page-heading"><span class="eyebrow green" data-et="SINU ELURIKKUSE TEEKOND" data-en="YOUR BIODIVERSITY JOURNEY">SINU ELURIKKUSE TEEKOND</span><h1 data-et="Minu aed" data-en="My garden">Minu aed</h1><p data-et="Pane kirja oma aias kasvavad taimed. Praegu on nimekiri salvestatud ainult sellesse brauserisse." data-en="List the plants in your garden. The list is currently stored only in this browser.">Pane kirja oma aias kasvavad taimed. Praegu on nimekiri salvestatud ainult sellesse brauserisse.</p></section>
-    <section class="wrap page-grid"><article class="panel page-card"><span class="page-kicker" data-et="TAIMEDE NIMEKIRI" data-en="PLANT INVENTORY">TAIMEDE NIMEKIRI</span><h2><span id="gardenCount">0</span> <span data-et="taimekirjet" data-en="plant entries">taimekirjet</span></h2><form id="gardenForm" class="page-form"><label for="gardenPlant" data-et="Lisa taime nimi" data-en="Add a plant name">Lisa taime nimi</label><div><input id="gardenPlant" class="plant-input" maxlength="120" required list="gardenNames" placeholder="nt nurmenukk"><datalist id="gardenNames"></datalist><button class="btn primary" type="submit" data-et="Lisa" data-en="Add">Lisa</button></div></form><p id="gardenStatus" class="muted" role="status"></p><ul id="gardenList" class="garden-list"></ul><a href="#catalog" class="btn secondary" data-et="Sirvi taimekataloogi" data-en="Browse plant catalog">Sirvi taimekataloogi</a></article><article class="panel page-card"><span class="page-kicker" data-et="JÄRGMINE ARENDUSETAPP" data-en="NEXT DEVELOPMENT STEP">JÄRGMINE ARENDUSETAPP</span><h2 data-et="Elurikkuse analüüs" data-en="Biodiversity analysis">Elurikkuse analüüs</h2><p data-et="Õitsemiskalender, tolmeldajate toidutaimed ja soovitused lisanduvad pärast liigipõhiste andmete kontrollimist." data-en="Flowering calendar, pollinator food plants and recommendations will follow verified species-level data.">Õitsemiskalender, tolmeldajate toidutaimed ja soovitused lisanduvad pärast liigipõhiste andmete kontrollimist.</p><p class="data-note" data-et="Praegu ei arvutata elurikkuse skoori." data-en="No biodiversity score is calculated yet.">Praegu ei arvutata elurikkuse skoori.</p></article></section>
+    <section class="wrap page-grid garden-layout"><article class="panel page-card"><span class="page-kicker" data-et="TAIMEDE NIMEKIRI" data-en="PLANT INVENTORY">TAIMEDE NIMEKIRI</span><h2><span id="gardenCount">0</span> <span data-et="taimekirjet" data-en="plant entries">taimekirjet</span></h2><form id="gardenForm" class="page-form"><label for="gardenPlant" data-et="Lisa taime nimi" data-en="Add a plant name">Lisa taime nimi</label><div><input id="gardenPlant" class="plant-input" maxlength="120" required list="gardenNames" placeholder="nt nurmenukk"><datalist id="gardenNames"></datalist><button class="btn primary" type="submit" data-et="Lisa" data-en="Add">Lisa</button></div></form><p id="gardenStatus" class="muted" role="status"></p><ul id="gardenList" class="garden-list"></ul><a href="#catalog" class="btn secondary" data-et="Sirvi taimekataloogi" data-en="Browse plant catalog">Sirvi taimekataloogi</a></article><article class="panel page-card garden-dashboard-card"><span class="page-kicker" data-et="TEADUSANDMETEL PÕHINEV VAADE" data-en="EVIDENCE-BASED VIEW">TEADUSANDMETEL PÕHINEV VAADE</span><h2 data-et="Minu aia analüüs" data-en="My garden analysis">Minu aia analüüs</h2><p data-et="Lisa või eemalda taimi – kalender, seosed ja võimalikud puudujäägid uuenevad kohe. See on andmepõhine prototüüp, mitte elurikkuse skoor." data-en="Add or remove plants – the calendar, associations and possible gaps update immediately. This is an evidence-based prototype, not a biodiversity score.">Lisa või eemalda taimi – kalender, seosed ja võimalikud puudujäägid uuenevad kohe. See on andmepõhine prototüüp, mitte elurikkuse skoor.</p><div id="gardenDashboard"></div></article></section>
   </div>
   <div data-page="catalog" id="catalog" hidden>
     <section class="wrap page-heading"><span class="eyebrow green" data-et="TAIMEDE AVASTAMINE" data-en="EXPLORE PLANTS">TAIMEDE AVASTAMINE</span><h1 data-et="Taimekataloog" data-en="Plant catalog">Taimekataloog</h1><p data-et="Allikaviidetega ökoloogilised algandmed ja taimenimede register. Puuduvad andmed on märgitud teadmata. Nime esinemine ei tähenda istutussoovitust." data-en="Source-linked ecological starter data and plant name index. Missing data are marked unknown. Inclusion is not a planting recommendation.">Allikaviidetega ökoloogilised algandmed ja taimenimede register. Puuduvad andmed on märgitud teadmata. Nime esinemine ei tähenda istutussoovitust.</p></section>
@@ -270,6 +270,8 @@
 <script src="features.js?v=7"></script>
 <script src="i18n.js?v=4"></script>
 <script src="lab.js?v=4"></script>
-<script src="pages.js?v=6"></script>
+<script src="garden-model.js?v=1"></script>
+<script src="garden-ui.js?v=1"></script>
+<script src="pages.js?v=7"></script>
 </body>
 </html>
