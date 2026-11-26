@@ -222,10 +222,9 @@
   }
 
   function shareCurrent(){
-    const a = requireAnalysis(); if(!a) return;
-    const c = confidence(a);
-    const bio=biodiversityModel(a);
-    shareText(`KITA analüüs: ${a.plant.common}${a.plant.scientific ? ` (${a.plant.scientific})` : ''}\nTulemus: ${a.verdict}${a.score != null ? `\nKohalik andmetugi: ${a.score}%` : ''}\nUsaldusaste: ${c.label}\nElurikkuse potentsiaal: ${bio.label}${a.coords ? `\nAsukoht: ${a.coords.lat.toFixed(5)}, ${a.coords.lon.toFixed(5)}` : ''}`);
+    const a=requireAnalysis(); if(!a)return;
+    shareText(`KITA analüüs: ${a.plant.common}${a.plant.scientific?' ('+a.plant.scientific+')':''}\nTulemus: ${a.verdict}\nEsialgne hinnang, mitte kasvugarantii.`);
+
   }
 
   async function speciesMatch(name){
@@ -275,13 +274,13 @@
     root.innerHTML = '<div class="feature-empty">Otsin kohaliku vaatlusandmega taimi…</div>';
     const list = await nearbyCandidates().catch(()=>[]); lastNearby = list;
     if(!list.length){ root.innerHTML = '<div class="feature-empty">Selle koha kohta ei leitud piisavalt andmeid.</div>'; return; }
-    root.innerHTML = list.slice(0,12).map((x,i)=>`<article class="native-card"><span class="plant-rank">${i<3?'TUGEV KOHALIK ANDMETUGI':'KANDIDAAT'}</span><b>${esc(x.name)}</b><div class="latin">${esc(x.scientific)}</div><p>GBIF kohalikke vaatlusi: <strong>${x.count}</strong></p>${x.media?`<img class="native-thumb" src="${esc(x.media)}" alt="${esc(x.name)}" loading="lazy">`:''}</article>`).join('') + '<p class="share-note">Kohalik vaatlusandmestik ei tõesta, et taim sobib igasse mikrokasvukohta. Kaitse- ja võõrliikide kontroll tuleb teha eraldi.</p>';
+    root.innerHTML = list.slice(0,12).map((x,i)=>`<article class="native-card"><span class="plant-rank">PIIRKONNAS VAADATUD</span><b>${esc(x.name)}</b><div class="latin">${esc(x.scientific)}</div><p>GBIF kohalikke vaatlusi: <strong>${x.count}</strong></p>${x.media?`<img class="native-thumb" src="${esc(x.media)}" alt="${esc(x.name)}" loading="lazy">`:''}</article>`).join('') + '<p class="share-note">Kohalik vaatlusandmestik ei tõesta, et taim sobib igasse mikrokasvukohta. Kaitse- ja võõrliikide kontroll tuleb teha eraldi.</p>';
   }
 
   function renderExplain(){
     const root = $('explainResult'); const a = requireAnalysis(); if(!a){ root.innerHTML = ''; return; }
     const c = confidence(a); const lines = simpleExplanation(a);
-    root.innerHTML = `<div class="feature-card"><div class="confidence ${c.cls}">Usaldusaste: ${c.label}</div><p>${esc(c.text)}</p><h3>Miks KITA nii ütles?</h3><div class="explain-box">${lines.map(x=>`<div class="explain-item"><b>${esc(x.label)}</b><span>${esc(x.text)}</span></div>`).join('')}</div><p><b>Kokkuvõte:</b> ${esc(a.verdict)}. KITA ühendab kohaliku leviku ja keskkonnaandmed; ükski kiht ei tõesta üksi, et taim kindlasti kasvab.</p></div>`;
+    root.innerHTML = `<div class="feature-card"><p>Andmekihid kirjeldavad kohta, kuid ei kinnita taime sobivust.</p><h3>Miks KITA nii ütles?</h3><div class="explain-box">${lines.map(x=>`<div class="explain-item"><b>${esc(x.label)}</b><span>${esc(x.text)}</span></div>`).join('')}</div><p><b>Kokkuvõte:</b> ${esc(a.verdict)}. Kohalikud vaatlused ja keskkonnaandmed on taustainfo, mitte kinnitatud sobivushinnang.</p></div>`;
   }
 
   function renderWarning(){
@@ -382,16 +381,12 @@
   }
 
   function buildExtraSnapshot(a=currentAnalysis()){
-    return {confidence:confidence(a),season:seasonModel(a),risk:riskModel(a),traits:traitFor(a.plant),biodiversity:biodiversityModel(a)};
+    return {note:'Ökoloogiline hinnang pole veel valideeritud.'};
   }
 
   function reportLines(a){
-    const ex=buildExtraSnapshot(a);
-    return [
-      ['Taim',`${a.plant.common}${a.plant.scientific?` (${a.plant.scientific})`:''}`],['Tulemus',a.verdict],['Usaldusaste',ex.confidence.label],
-      ['Asukoht',a.coords?`${a.coords.lat.toFixed(5)}, ${a.coords.lon.toFixed(5)}`:'–'],['Muld',a.env.soil?.value||'–'],['Niiskus',a.env.moisture?.value||'–'],['Valgus',a.env.light?.value||'–'],['Maastik',a.env.land?.value||'–'],['Kõrgus',a.env.elevation?.value||'–'],
-      ['Hooajalisus',ex.season.preferred],['Kuivusrisk',ex.risk.drought],['Liigniiskuse risk',ex.risk.flood],['Tolmeldajate kasu',ex.traits.pollinator],['Elurikkuse potentsiaal',`${ex.biodiversity.score}/5`],['Hooldusvajadus',ex.traits.maintenance],['Kasvusuurus',ex.traits.size],['Ohutus',ex.traits.safety]
-    ];
+    return [['Taim',a.plant.common+(a.plant.scientific?' ('+a.plant.scientific+')':'')],['Tulemus',a.verdict],['Muld',a.env.soil?.value||'–'],['Niiskus',a.env.moisture?.value||'–'],['Valgus',a.env.light?.value||'–'],['Maastik',a.env.land?.value||'–'],['Kõrgus',a.env.elevation?.value||'–'],['Märkus','Elurikkuse hinnang ei ole veel valideeritud.']];
+
   }
 
   function generatePdf(){
@@ -469,7 +464,7 @@
     document.body.appendChild(panel);
 
     const accountMenu = $('accountMenu');
-    if(accountMenu && !$('openMyAnalyses')){ const b=document.createElement('button'); b.id='openMyAnalyses'; b.className='btn secondary'; b.type='button'; b.textContent='Minu analüüsid'; accountMenu.insertBefore(b,$('logoutButton')); b.onclick=()=>openPanel('saved'); }
+    if(accountMenu && !document.getElementById('account') && !$('openMyAnalyses')){ const b=document.createElement('button'); b.id='openMyAnalyses'; b.className='btn secondary'; b.type='button'; b.textContent='Minu analüüsid'; accountMenu.insertBefore(b,$('logoutButton')); b.onclick=()=>openPanel('saved'); }
     injectResultActions();
 
     $('featureClose').onclick=closePanel; panel.addEventListener('click',e=>{if(e.target===panel) closePanel();});
@@ -487,7 +482,7 @@
     $('quickSaveBtn').onclick=saveCurrent; $('quickWhyBtn').onclick=()=>openPanel('explain'); $('quickShareBtn').onclick=shareCurrent; $('quickFavoriteBtn').onclick=togglePlantFavorite; $('quickPdfBtn').onclick=generatePdf;
   }
 
-  function openPanel(tab='saved'){ $('featurePanel').classList.remove('hidden'); document.body.classList.add('modal-open'); switchTab(tab); }
+  function openPanel(tab='saved'){ const groups=[['saved','history','favorites'],['compare'],['grow','explain','sources','feedback','freshness']]; const group=groups.find(g=>g.includes(tab)); if(!group)return; document.querySelectorAll('.feature-tab').forEach(x=>{x.hidden=!group.includes(x.dataset.tab);}); $('featurePanel').classList.remove('hidden'); document.body.classList.add('modal-open'); switchTab(tab); }
   function closePanel(){ $('featurePanel')?.classList.add('hidden'); document.body.classList.remove('modal-open'); }
   function switchTab(tab){
     document.querySelectorAll('.feature-tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
@@ -521,7 +516,7 @@
   }
 
   function init(){
-    buildUI(); observeAnalysis(); registerOffline();
+    buildUI(); observeAnalysis(); registerOffline(); window.KITAFeatures={open:openPanel};
     document.addEventListener('keydown',e=>{if(e.key==='Escape' && !$('featurePanel')?.classList.contains('hidden')) closePanel();});
   }
 
