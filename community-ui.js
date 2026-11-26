@@ -15,6 +15,7 @@ function render(result,onExplore){
  const add=(parent,tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;parent.append(n);return n;};
  const plan=root.KITACommunityPlanner.plan(result,{max:Number($('communityMax').value)||5,includeUnknown:$('communityUnknown').checked});
  target.replaceChildren();
+ root.KITAGardenCloud?.setPlan(plan.available?plan:null);
  if(!plan.available){add(target,'p','garden-notice',t('Andmebaas pole saadaval.','Plant database unavailable.'));return;}
  const notice=add(target,'div','recommend-notice');
  add(notice,'strong','',t('Planeerimise prototüüp – mitte kinnitatud istutusplaan','Planning prototype – not an approved planting plan'));
