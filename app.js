@@ -64,7 +64,7 @@
   };
 
   function debug(...args){ console.debug('[KITA]', ...args); }
-  function scrollToId(id){ $(id)?.scrollIntoView({behavior:'smooth', block:'start'}); }
+  function scrollToId(id){ if(window.KITAPages){ window.KITAPages.reveal(id); } else $(id)?.scrollIntoView({behavior:'smooth', block:'start'}); }
   function setStatus(message, type=''){
     const node = $('status');
     if(!node) return;
@@ -765,6 +765,8 @@
     try{
       bindEvents();
       initMap();
+      document.addEventListener('kita:page', e=>{if(e.detail.page==='analysis') requestAnimationFrame(()=>state.map?.invalidateSize());});
+      window.KITASelectLocation=(lat,lon)=>{ if(window.KITAPages) window.KITAPages.reveal('map'); setLocation(lat,lon,'salvestatud analüüs'); requestAnimationFrame(()=>state.map?.invalidateSize()); };
       debug('FINAL versioon käivitus');
     } catch(error){
       console.error('[KITA] Käivitamise viga', error);
