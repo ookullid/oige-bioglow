@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="features.css?v=2">
   <link rel="stylesheet" href="lab.css?v=1">
   <link rel="stylesheet" href="design.css?v=1">
-  <link rel="stylesheet" href="pages.css?v=5">
+  <link rel="stylesheet" href="pages.css?v=6">
 </head>
 <body>
 <header class="topbar">
@@ -203,7 +203,21 @@
   <section class="wrap page-actions"><button class="btn secondary" data-feature-open="grow" data-et="Piirkonnas vaadeldud taimed" data-en="Locally observed plants">Piirkonnas vaadeldud taimed</button><button class="btn secondary" data-feature-open="sources" data-et="Andmeallikad" data-en="Data sources">Andmeallikad</button></section>
   </div>
   <div data-page="garden" id="garden" hidden>
-    <section class="wrap page-heading"><span class="eyebrow green" data-et="SINU ELURIKKUSE TEEKOND" data-en="YOUR BIODIVERSITY JOURNEY">SINU ELURIKKUSE TEEKOND</span><h1 data-et="Minu aed" data-en="My garden">Minu aed</h1><p data-et="Pane kirja oma aias kasvavad taimed. Praegu on nimekiri salvestatud ainult sellesse brauserisse." data-en="List the plants in your garden. The list is currently stored only in this browser.">Pane kirja oma aias kasvavad taimed. Praegu on nimekiri salvestatud ainult sellesse brauserisse.</p></section>
+    <section class="wrap page-heading"><span class="eyebrow green" data-et="SINU ELURIKKUSE TEEKOND" data-en="YOUR BIODIVERSITY JOURNEY">SINU ELURIKKUSE TEEKOND</span><h1 data-et="Minu aed" data-en="My garden">Minu aed</h1><p data-et="Halda oma aedu, analüüsi taimi ja salvesta taimekoosluste kavandeid." data-en="Manage gardens, analyse plants and save community plans.">Halda oma aedu, analüüsi taimi ja salvesta taimekoosluste kavandeid.</p></section>
+    <section class="wrap panel page-card cloud-panel" aria-labelledby="cloudTitle">
+      <span class="page-kicker" data-et="MINU AIAD" data-en="MY GARDENS">MINU AIAD</span>
+      <h2 id="cloudTitle" data-et="Aiad ja salvestatud kavandid" data-en="Gardens and saved plans">Aiad ja salvestatud kavandid</h2>
+      <p id="cloudMode" class="cloud-mode"></p>
+      <div id="cloudGuest"><p data-et="Kohalik mustand jääb sellesse brauserisse. Logi sisse, et luua pilveaedu ja avada neid teistest seadmetest." data-en="The local draft remains in this browser. Sign in to create cloud gardens and open them on other devices.">Kohalik mustand jääb sellesse brauserisse. Logi sisse, et luua pilveaedu ja avada neid teistest seadmetest.</p><button id="cloudLogin" type="button" class="btn primary" data-et="Logi sisse" data-en="Sign in">Logi sisse</button></div>
+      <div id="cloudSigned" hidden>
+      <div class="cloud-controls"><label><span data-et="Salvestatud aiad" data-en="Saved gardens">Salvestatud aiad</span><select id="cloudGardenSelect"></select></label><button id="cloudOpen" type="button" class="btn primary" data-et="Ava aed" data-en="Open garden">Ava aed</button><button id="cloudRefresh" type="button" class="btn secondary" data-et="Värskenda nimekirja" data-en="Refresh list">Värskenda nimekirja</button></div>
+      <div class="cloud-controls"><label><span data-et="Uue aia nimi" data-en="New garden name">Uue aia nimi</span><input id="cloudNewName" maxlength="80" class="plant-input"></label><button id="cloudCreate" type="button" class="btn secondary" data-et="Loo tühi aed" data-en="Create empty garden">Loo tühi aed</button><button id="cloudCopy" type="button" class="btn secondary" data-et="Loo praeguse nimekirja koopia" data-en="Create copy of current inventory">Loo praeguse nimekirja koopia</button></div>
+      <div id="cloudActive" hidden>
+      <div class="cloud-controls"><label><span data-et="Avatud aia nimi" data-en="Open garden name">Avatud aia nimi</span><input id="cloudGardenName" maxlength="80" class="plant-input"></label><button id="cloudSave" type="button" class="btn primary" data-et="Salvesta aed kontole" data-en="Save garden to account">Salvesta aed kontole</button><button id="cloudLocal" type="button" class="btn secondary" data-et="Tagasi kohaliku mustandi juurde" data-en="Return to local draft">Tagasi kohaliku mustandi juurde</button><button id="cloudDelete" type="button" class="btn secondary cloud-danger" data-et="Kustuta aed" data-en="Delete garden">Kustuta aed</button></div>
+      <p class="muted" data-et="Muudatused salvestatakse nupuvajutusel. Teises seadmes avamiseks värskenda nimekirja ja ava aed uuesti." data-en="Changes are saved on button press. To see edits from another device, refresh the list and reopen the garden.">Muudatused salvestatakse nupuvajutusel. Teises seadmes avamiseks värskenda nimekirja ja ava aed uuesti.</p>
+      <div class="cloud-controls"><label><span data-et="Taimekoosluse kavandi nimi" data-en="Plant community plan name">Taimekoosluse kavandi nimi</span><input id="cloudPlanName" maxlength="80" class="plant-input"></label><button id="cloudPlanSave" type="button" class="btn secondary" data-et="Salvesta allpool kuvatud kavand" data-en="Save plan shown below">Salvesta allpool kuvatud kavand</button></div><p class="muted" data-et="Kavandi salvestamiseks salvesta esmalt aed ja vali planeerijas vähemalt üks liik." data-en="Save the garden first and select at least one species in the planner to save a plan.">Kavandi salvestamiseks salvesta esmalt aed ja vali planeerijas vähemalt üks liik.</p>
+      <div id="cloudPlans"></div></div></div><p id="cloudGardenStatus" class="cloud-status" role="status" aria-live="polite"></p>
+    </section>
     <section class="wrap page-grid garden-layout"><article class="panel page-card"><span class="page-kicker" data-et="TAIMEDE NIMEKIRI" data-en="PLANT INVENTORY">TAIMEDE NIMEKIRI</span><h2><span id="gardenCount">0</span> <span data-et="taimekirjet" data-en="plant entries">taimekirjet</span></h2><form id="gardenForm" class="page-form"><label for="gardenPlant" data-et="Lisa taime nimi" data-en="Add a plant name">Lisa taime nimi</label><div><input id="gardenPlant" class="plant-input" maxlength="120" required list="gardenNames" placeholder="nt nurmenukk"><datalist id="gardenNames"></datalist><button class="btn primary" type="submit" data-et="Lisa" data-en="Add">Lisa</button></div></form><p id="gardenStatus" class="muted" role="status"></p><ul id="gardenList" class="garden-list"></ul><a href="#catalog" class="btn secondary" data-et="Sirvi taimekataloogi" data-en="Browse plant catalog">Sirvi taimekataloogi</a></article><article class="panel page-card garden-dashboard-card"><span class="page-kicker" data-et="TEADUSANDMETEL PÕHINEV VAADE" data-en="EVIDENCE-BASED VIEW">TEADUSANDMETEL PÕHINEV VAADE</span><h2 data-et="Minu aia analüüs" data-en="My garden analysis">Minu aia analüüs</h2><p data-et="Lisa või eemalda taimi – kalender, seosed ja võimalikud puudujäägid uuenevad kohe. See on andmepõhine prototüüp, mitte elurikkuse skoor." data-en="Add or remove plants – the calendar, associations and possible gaps update immediately. This is an evidence-based prototype, not a biodiversity score.">Lisa või eemalda taimi – kalender, seosed ja võimalikud puudujäägid uuenevad kohe. See on andmepõhine prototüüp, mitte elurikkuse skoor.</p><div id="gardenDashboard"></div></article></section>
     <section class="wrap panel page-card recommendation-panel" aria-labelledby="recommendTitle">
       <span class="page-kicker" data-et="JÄRGMISED SAMMUD" data-en="NEXT STEPS">JÄRGMISED SAMMUD</span><h2 id="recommendTitle" data-et="Personaalsed taimekandidaadid" data-en="Personalised plant candidates">Personaalsed taimekandidaadid</h2>
@@ -285,7 +299,7 @@
 <script src="plant-data.js?v=16"></script>
 <script src="plant-ecology.js?v=4"></script>
 <script src="app.js?v=23"></script>
-<script src="auth.js?v=3"></script>
+<script src="auth.js?v=4"></script>
 <script src="features.js?v=7"></script>
 <script src="i18n.js?v=4"></script>
 <script src="lab.js?v=4"></script>
@@ -293,8 +307,9 @@
 <script src="garden-ui.js?v=1"></script>
 <script src="recommendation-model.js?v=1"></script>
 <script src="community-model.js?v=1"></script>
-<script src="community-ui.js?v=1"></script>
+<script src="community-ui.js?v=2"></script>
 <script src="recommendation-ui.js?v=2"></script>
-<script src="pages.js?v=8"></script>
+<script src="garden-cloud.js?v=1"></script>
+<script src="pages.js?v=9"></script>
 </body>
 </html>
