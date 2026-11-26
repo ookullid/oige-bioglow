@@ -18,14 +18,20 @@
   <link rel="stylesheet" href="features.css?v=2">
   <link rel="stylesheet" href="lab.css?v=1">
   <link rel="stylesheet" href="design.css?v=1">
+  <link rel="stylesheet" href="pages.css?v=1">
 </head>
 <body>
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <a class="brand" href="#top"><span class="brand-dot">✦</span><span>KITA</span><span class="version">BETA</span></a>
-    <nav class="nav-actions" aria-label="Põhinavigatsioon">
-      <button class="btn ghost" data-scroll="results">Tulemused</button>
-      <button class="btn primary compact" data-scroll="analyze">Analüüsi</button>
+    <a class="brand" href="#home"><span class="brand-dot">✦</span><span>KITA</span><span class="version">BETA</span></a>
+    <nav class="main-nav" aria-label="Põhinavigatsioon">
+      <a href="#home" data-page-link="home" data-et="Avaleht" data-en="Home">Avaleht</a>
+      <a href="#analysis" data-page-link="analysis" data-et="Taimeanalüüs" data-en="Plant analysis">Taimeanalüüs</a>
+      <a href="#garden" data-page-link="garden" data-et="Minu aed" data-en="My garden">Minu aed</a>
+      <a href="#catalog" data-page-link="catalog" data-et="Taimekataloog" data-en="Plant catalog">Taimekataloog</a>
+      <a href="#account" data-page-link="account" data-et="Minu konto" data-en="My account">Minu konto</a>
+    </nav>
+    <div class="nav-actions" aria-label="Konto ja keel">
       <div id="accountWrap" class="account-wrap">
         <button id="accountButton" class="btn ghost account-btn" type="button" aria-label="Konto">
           <span class="account-avatar">👤</span><span>Konto</span>
@@ -38,18 +44,20 @@
           <button id="logoutButton" class="btn secondary" type="button">Logi välja</button>
         </div>
       </div>
-    </nav>
+    </div>
   </div>
 </header>
 
 <main id="top">
+  <div data-page="home" id="home">
   <section class="hero wrap">
     <div class="hero-copy">
       <span class="eyebrow">ELURIKKUS ALGAB SINUST</span>
       <h1>Anna loodusele rohkem ruumi.</h1>
       <p>Tee teadlikumaid taimevalikuid. Uuri kohalikke liike, kasvukoha tingimusi ja looduskaitseandmeid – samm elurikkama aia poole.</p>
       <div class="hero-actions">
-        <button class="btn primary large" data-scroll="analyze">Alusta analüüsi →</button>
+        <a class="btn primary large" href="#garden" data-et="Alusta oma aiast →" data-en="Start with your garden →">Alusta oma aiast →</a>
+        <button class="btn hero-secondary" data-scroll="analyze">Alusta analüüsi →</button>
         <button class="btn hero-secondary" data-scroll="how">Kuidas see töötab?</button>
       </div>
     </div>
@@ -60,10 +68,14 @@
     </div>
   </section>
 
-  <section class="wrap tool-section" aria-labelledby="toolsTitle">
-    <div><span class="eyebrow green" data-i18n="tools.eyebrow">TÖÖRIISTAD</span><h2 id="toolsTitle" data-i18n="tools.title">Avasta KITA võimalusi</h2></div>
-    <div id="kitaTools"></div>
+  <section class="wrap landing-tools">
+    <article class="panel"><span class="page-kicker">01</span><h2 data-et="Minu aed" data-en="My garden">Minu aed</h2><p data-et="Koosta oma aia taimede nimekiri. See on tulevase elurikkuse analüüsi alus." data-en="Build a plant inventory for future biodiversity analysis.">Koosta oma aia taimede nimekiri. See on tulevase elurikkuse analüüsi alus.</p><a href="#garden" class="btn primary" data-et="Ava minu aed" data-en="Open my garden">Ava minu aed</a></article>
+    <article class="panel"><span class="page-kicker">02</span><h2 data-et="Taimeanalüüs" data-en="Plant analysis">Taimeanalüüs</h2><p data-et="Uuri liiki, asukohta ja keskkonnaandmeid." data-en="Explore a species, location and environmental data.">Uuri liiki, asukohta ja keskkonnaandmeid.</p><a href="#analysis" class="btn secondary" data-et="Uuri taime" data-en="Explore a plant">Uuri taime</a></article>
+    <article class="panel"><span class="page-kicker">03</span><h2 data-et="Taimekataloog" data-en="Plant catalog">Taimekataloog</h2><p data-et="Otsi olemasolevast nimeloendist ja lisa taimi oma aeda." data-en="Search the existing name index and add plants to your garden.">Otsi olemasolevast nimeloendist ja lisa taimi oma aeda.</p><a href="#catalog" class="btn secondary" data-et="Ava kataloog" data-en="Open catalog">Ava kataloog</a></article>
   </section>
+  <div id="kitaTools" hidden></div>
+  </div>
+  <div data-page="analysis" id="analysis" hidden>
   <section class="wrap analysis-heading"><div><span class="eyebrow green" data-i18n="analysis.eyebrow">TAIMEANALÜÜS</span><h2 data-i18n="analysis.title">Uuri taime ja kasvukohta</h2></div><p data-i18n="analysis.note">Esialgne hinnang, mitte kasvugarantii.</p></section>
   <section id="analyze" class="wrap workspace">
     <article class="panel controls-panel">
@@ -121,6 +133,8 @@
         <small class="muted"> <a href="https://geoportaal.maaamet.ee/est/teenused/in-ads-in-aks/nb-muudatused-in-adsis-p1038.html" target="_blank" rel="noopener">Maa- ja Ruumiamet · In-AKS</a></small>
       </form>
 
+      <details class="site-details"><summary data-et="Foto ja GPS (lisavalik)" data-en="Photo and GPS (optional)">Foto ja GPS (lisavalik)</summary>
+      <p class="muted" data-et="Kui lisad foto, saadetakse see analüüsi ajal koos valitud asukohaga tuvastusteenusele." data-en="If you add a photo, analysis sends it and the selected location to the identification service.">Kui lisad foto, saadetakse see analüüsi ajal koos valitud asukohaga tuvastusteenusele.</p>
       <div id="drop" class="drop-zone">
         <input id="files" type="file" accept="image/jpeg,image/jpg" hidden>
         <div class="drop-icon">↥</div>
@@ -133,6 +147,7 @@
         <button id="removePhoto" class="icon-btn" type="button" aria-label="Eemalda foto">×</button>
       </div>
 
+      </details>
       <div class="location-actions">
         <button id="useLocation" class="btn secondary" type="button">◎ Kasuta minu asukohta</button>
         <button id="pickMap" class="btn secondary" type="button">⌖ Vali kaardilt</button>
@@ -185,6 +200,21 @@
     </div>
   </section>
 
+  <section class="wrap page-actions"><button class="btn secondary" data-feature-open="grow" data-et="Piirkonnas vaadeldud taimed" data-en="Locally observed plants">Piirkonnas vaadeldud taimed</button><button class="btn secondary" data-feature-open="sources" data-et="Andmeallikad" data-en="Data sources">Andmeallikad</button></section>
+  </div>
+  <div data-page="garden" id="garden" hidden>
+    <section class="wrap page-heading"><span class="eyebrow green" data-et="SINU ELURIKKUSE TEEKOND" data-en="YOUR BIODIVERSITY JOURNEY">SINU ELURIKKUSE TEEKOND</span><h1 data-et="Minu aed" data-en="My garden">Minu aed</h1><p data-et="Pane kirja oma aias kasvavad taimed. Praegu on nimekiri salvestatud ainult sellesse brauserisse." data-en="List the plants in your garden. The list is currently stored only in this browser.">Pane kirja oma aias kasvavad taimed. Praegu on nimekiri salvestatud ainult sellesse brauserisse.</p></section>
+    <section class="wrap page-grid"><article class="panel page-card"><span class="page-kicker" data-et="TAIMEDE NIMEKIRI" data-en="PLANT INVENTORY">TAIMEDE NIMEKIRI</span><h2><span id="gardenCount">0</span> <span data-et="taimekirjet" data-en="plant entries">taimekirjet</span></h2><form id="gardenForm" class="page-form"><label for="gardenPlant" data-et="Lisa taime nimi" data-en="Add a plant name">Lisa taime nimi</label><div><input id="gardenPlant" class="plant-input" maxlength="120" required list="gardenNames" placeholder="nt nurmenukk"><datalist id="gardenNames"></datalist><button class="btn primary" type="submit" data-et="Lisa" data-en="Add">Lisa</button></div></form><p id="gardenStatus" class="muted" role="status"></p><ul id="gardenList" class="garden-list"></ul><a href="#catalog" class="btn secondary" data-et="Sirvi taimekataloogi" data-en="Browse plant catalog">Sirvi taimekataloogi</a></article><article class="panel page-card"><span class="page-kicker" data-et="JÄRGMINE ARENDUSETAPP" data-en="NEXT DEVELOPMENT STEP">JÄRGMINE ARENDUSETAPP</span><h2 data-et="Elurikkuse analüüs" data-en="Biodiversity analysis">Elurikkuse analüüs</h2><p data-et="Õitsemiskalender, tolmeldajate toidutaimed ja soovitused lisanduvad pärast liigipõhiste andmete kontrollimist." data-en="Flowering calendar, pollinator food plants and recommendations will follow verified species-level data.">Õitsemiskalender, tolmeldajate toidutaimed ja soovitused lisanduvad pärast liigipõhiste andmete kontrollimist.</p><p class="data-note" data-et="Praegu ei arvutata elurikkuse skoori." data-en="No biodiversity score is calculated yet.">Praegu ei arvutata elurikkuse skoori.</p></article></section>
+  </div>
+  <div data-page="catalog" id="catalog" hidden>
+    <section class="wrap page-heading"><span class="eyebrow green" data-et="TAIMEDE AVASTAMINE" data-en="EXPLORE PLANTS">TAIMEDE AVASTAMINE</span><h1 data-et="Taimekataloog" data-en="Plant catalog">Taimekataloog</h1><p data-et="Olemasolev KITA taimenimede register, mitte veel kontrollitud ökoloogiline andmebaas. Nime esinemine ei tähenda istutussoovitust." data-en="Existing KITA plant name index, not yet a verified ecological database. Inclusion is not a planting recommendation.">Olemasolev KITA taimenimede register, mitte veel kontrollitud ökoloogiline andmebaas. Nime esinemine ei tähenda istutussoovitust.</p></section>
+    <section class="wrap panel page-card"><label for="catalogSearch" data-et="Otsi eesti või ladina keeles" data-en="Search in Estonian or Latin">Otsi eesti või ladina keeles</label><input id="catalogSearch" class="plant-input" type="search" placeholder="Otsi taime..." autocomplete="off"><div class="page-actions"><span id="catalogCount" class="muted" role="status"></span><button class="btn secondary" data-feature-open="compare" data-et="Võrdle vaatlusandmeid" data-en="Compare observation counts">Võrdle vaatlusandmeid</button></div><p id="catalogStatus" role="status" class="muted"></p><div id="catalogList" class="catalog-grid"></div></section>
+  </div>
+  <div data-page="account" id="account" hidden>
+    <section class="wrap page-heading"><span class="eyebrow green" data-et="SINU KITA" data-en="YOUR KITA">SINU KITA</span><h1 data-et="Minu konto" data-en="My account">Minu konto</h1><p data-et="Halda kontot, salvestatud analüüse ja lemmikuid." data-en="Manage your account, saved analyses and favorites.">Halda kontot, salvestatud analüüse ja lemmikuid.</p></section>
+    <section class="wrap page-grid"><article class="panel page-card"><h2 data-et="Konto" data-en="Account">Konto</h2><p id="accountPageState" class="muted"></p><button class="btn primary" id="pageLogin" data-et="Logi sisse / loo konto" data-en="Sign in / create account">Logi sisse / loo konto</button><button id="pageLogout" class="btn secondary" hidden data-et="Logi välja" data-en="Sign out">Logi välja</button></article><article class="panel page-card"><h2 data-et="Minu andmed" data-en="My data">Minu andmed</h2><div class="page-actions"><button class="btn secondary" data-feature-open="saved" data-et="Analüüside ajalugu" data-en="Saved analyses">Analüüside ajalugu</button><button class="btn secondary" data-feature-open="favorites" data-et="Lemmiktaimed" data-en="Favorites">Lemmiktaimed</button><button class="btn secondary" data-feature-open="history" data-et="Ajalugu kaardil" data-en="Map history">Ajalugu kaardil</button></div></article><article class="panel page-card"><h2 data-et="Seaded" data-en="Settings">Seaded</h2><p class="muted" data-et="Ligipääsetavus ja rakenduse paigaldamine. Asukoha ümardamine on praegu ainult kuvamise abivahend, mitte täielik andmekaitse." data-en="Accessibility and app installation. Location rounding is currently a display aid, not comprehensive privacy protection.">Ligipääsetavus ja rakenduse paigaldamine. Asukoha ümardamine on praegu ainult kuvamise abivahend, mitte täielik andmekaitse.</p><button class="btn secondary" id="pageSettings" data-et="Ava seaded" data-en="Open settings">Ava seaded</button></article></section>
+  </div>
+  <div data-page="home" class="home-info">
   <section id="how" class="wrap how panel">
     <div class="how-intro"><span class="eyebrow green">KUIDAS SEE TÖÖTAB?</span><h2>Neli lihtsat sammu</h2></div>
     <div class="how-grid">
@@ -194,6 +224,7 @@
       <article><span>04</span><b>Kohalik tõend</b><p>GBIF-i avalikud vaatlused näitavad, millised taimed piirkonnas päriselt esinevad.</p></article>
     </div>
   </section>
+  </div>
   <footer class="wrap kita-footer"><div><strong>KITA</strong> <span>· FLL BioGlow · Öökullid</span></div><p data-i18n="footer.note">Arendusjärgus projekt. Soovituste teaduslikku täpsust ja mõju elurikkusele alles uurime.</p></footer>
 </main>
 
@@ -233,10 +264,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="plant-data.js?v=16"></script>
-<script src="app.js?v=19"></script>
+<script src="app.js?v=20"></script>
 <script src="auth.js?v=1"></script>
-<script src="features.js?v=4"></script>
+<script src="features.js?v=5"></script>
 <script src="i18n.js?v=4"></script>
-<script src="lab.js?v=3"></script>
+<script src="lab.js?v=4"></script>
+<script src="pages.js?v=1"></script>
 </body>
 </html>
