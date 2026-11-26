@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="features.css?v=2">
   <link rel="stylesheet" href="lab.css?v=1">
   <link rel="stylesheet" href="design.css?v=1">
-  <link rel="stylesheet" href="pages.css?v=4">
+  <link rel="stylesheet" href="pages.css?v=5">
 </head>
 <body>
 <header class="topbar">
@@ -216,6 +216,14 @@
       <label class="recommend-checkbox"><input type="checkbox" id="recommendNative"><span data-et="Näita ainult allikaga kinnitatud Eesti pärismaiseid liike" data-en="Only show species with documented Estonian native status">Näita ainult allikaga kinnitatud Eesti pärismaiseid liike</span></label>
       <div id="recommendationResults"></div>
     </section>
+    <section class="wrap panel page-card recommendation-panel" aria-labelledby="communityTitle">
+      <span class="page-kicker" data-et="KOOSLUSE PLANEERIMINE" data-en="COMMUNITY PLANNING">KOOSLUSE PLANEERIMINE</span>
+      <h2 id="communityTitle" data-et="Automaatne taimekoosluse planeerija" data-en="Automatic plant community planner">Automaatne taimekoosluse planeerija</h2>
+      <p data-et="KITA võrdleb mitme liigi kombinatsioone ühiselt. Kavand muutub koos aia nimekirja ja ülal valitud filtritega." data-en="KITA compares combinations of species together. The plan updates with your inventory and filters above.">KITA võrdleb mitme liigi kombinatsioone ühiselt. Kavand muutub koos aia nimekirja ja ülal valitud filtritega.</p>
+      <div class="eco-filters community-controls"><label><span data-et="Maksimaalne uute liikide arv" data-en="Maximum new species">Maksimaalne uute liikide arv</span><select id="communityMax"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5" selected>5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></label></div>
+      <label class="recommend-checkbox"><input type="checkbox" id="communityUnknown"><span data-et="Kaasa ka puudulike kasvukohaandmetega kandidaadid" data-en="Include candidates with incomplete site data">Kaasa ka puudulike kasvukohaandmetega kandidaadid</span></label>
+      <div id="communityResults"></div>
+    </section>
   </div>
   <div data-page="catalog" id="catalog" hidden>
     <section class="wrap page-heading"><span class="eyebrow green" data-et="TAIMEDE AVASTAMINE" data-en="EXPLORE PLANTS">TAIMEDE AVASTAMINE</span><h1 data-et="Taimekataloog" data-en="Plant catalog">Taimekataloog</h1><p data-et="Allikaviidetega ökoloogilised algandmed ja taimenimede register. Puuduvad andmed on märgitud teadmata. Nime esinemine ei tähenda istutussoovitust." data-en="Source-linked ecological starter data and plant name index. Missing data are marked unknown. Inclusion is not a planting recommendation.">Allikaviidetega ökoloogilised algandmed ja taimenimede register. Puuduvad andmed on märgitud teadmata. Nime esinemine ei tähenda istutussoovitust.</p></section>
@@ -284,7 +292,9 @@
 <script src="garden-model.js?v=1"></script>
 <script src="garden-ui.js?v=1"></script>
 <script src="recommendation-model.js?v=1"></script>
-<script src="recommendation-ui.js?v=1"></script>
+<script src="community-model.js?v=1"></script>
+<script src="community-ui.js?v=1"></script>
+<script src="recommendation-ui.js?v=2"></script>
 <script src="pages.js?v=8"></script>
 </body>
 </html>
