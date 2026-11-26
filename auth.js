@@ -197,7 +197,7 @@
           <button id="analysesClose" class="auth-close" type="button" aria-label="Sulge">×</button>
           <span class="eyebrow">SINU BIOGLOW</span>
           <div class="analyses-title-row">
-            <div><h2>Minu analüüsid</h2><p>Siin on sinu kontole automaatselt salvestatud analüüsid.</p></div>
+            <div><h2>Minu analüüsid</h2><p>Siin on sinu kontole salvestatud analüüsid.</p></div>
             <span id="analysesCount" class="analyses-count">0</span>
           </div>
           <div id="analysesStatus" class="analyses-status">Laen…</div>
@@ -465,7 +465,7 @@
     const { data } = await client.auth.getSession();
     updateAccountUI(data?.session || null);
     client.auth.onAuthStateChange((_event, session) => updateAccountUI(session));
-    watchAnalyses();
+    // Analüüs salvestatakse ainult kasutaja nupuvajutusel (features.js).
   }
 
   document.addEventListener('DOMContentLoaded', init);
