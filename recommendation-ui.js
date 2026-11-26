@@ -15,6 +15,7 @@ function render(names,db,resolve,legacy,onExplore){
  const add=(parent,tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;parent.append(n);return n;};
  const button=(parent,txt,fn,cls='btn secondary')=>{const b=add(parent,'button',cls,txt);b.type='button';b.addEventListener('click',fn);return b;};
  target.replaceChildren();
+ root.KITACommunityUI?.render(result,onExplore);
  if(!result.available){add(target,'p','garden-notice',t('Andmebaas pole saadaval.','Plant database unavailable.'));return;}
  const notice=add(target,'div','recommend-notice');
  add(notice,'strong','',t('Esialgsed taimekandidaadid, mitte kinnitatud istutussoovitused','Preliminary plant candidates, not approved planting recommendations'));
@@ -50,6 +51,6 @@ function render(names,db,resolve,legacy,onExplore){
  if(result.total>6)button(target,showAll?t('Näita esimest 6','Show first 6'):t('Näita kõiki kandidaate','Show all candidates'),()=>{showAll=!showAll;refresh();});
 }
 function refresh(){if(active)render(active.names,active.db,active.resolve,active.legacy,active.onExplore);}
-function bind(){for(const id of ['recommendLight','recommendMoisture','recommendNutrients','recommendFocus','recommendNative'])$(id)?.addEventListener('change',()=>{showAll=false;refresh();});}
+function bind(){root.KITACommunityUI?.bind();for(const id of ['recommendLight','recommendMoisture','recommendNutrients','recommendFocus','recommendNative'])$(id)?.addEventListener('change',()=>{showAll=false;refresh();});}
 root.KITARecommendationUI=Object.freeze({render,bind});
 })(window);
