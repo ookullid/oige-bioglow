@@ -109,6 +109,9 @@
 
   function openLab(tab='heatmap'){
     buildLab();
+    const developer=new URLSearchParams(location.search).get('lab')==='1';
+    if(!developer && tab!=='settings') return;
+    document.querySelectorAll('[data-lab-tab]').forEach(x=>x.hidden=!developer&&x.dataset.labTab!=='settings');
     $('labModal').classList.remove('hidden'); document.body.classList.add('modal-open'); switchLab(tab);
   }
   function closeLab(){ $('labModal')?.classList.add('hidden'); document.body.classList.remove('modal-open'); }
@@ -335,7 +338,7 @@
   }
 
   function init(){
-    buildHeaderActions(); buildLab(); setupAccessibility(); setupPrivacyObserver(); setupMotion();
+    if(new URLSearchParams(location.search).get('lab')==='1') buildHeaderActions(); buildLab(); setupAccessibility(); setupPrivacyObserver(); setupMotion();
     window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;syncSettings();});
     window.addEventListener('appinstalled',()=>{installPrompt=null;syncSettings();});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('labModal')?.classList.contains('hidden'))closeLab();});
