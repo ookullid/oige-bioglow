@@ -1,5 +1,5 @@
-const CACHE='kita-v22';
-const CORE=["./","./index.html","./style.css?v=18","./auth.css?v=1","./features.css?v=2","./lab.css?v=1","./design.css?v=1","./pages.css?v=7","./plant-data.js?v=16","./plant-ecology.js?v=4","./app.js?v=24","./auth.js?v=5","./features.js?v=8","./i18n.js?v=5","./lab.js?v=5","./garden-model.js?v=1","./garden-ui.js?v=1","./recommendation-model.js?v=1","./community-model.js?v=1","./community-ui.js?v=2","./recommendation-ui.js?v=2","./garden-cloud.js?v=3","./pages.js?v=10","./manifest.webmanifest","./icon.svg"];
+const CACHE='kita-v23';
+const CORE=["./","./index.html","./style.css?v=18","./auth.css?v=1","./features.css?v=2","./lab.css?v=1","./design.css?v=1","./pages.css?v=8","./plant-data.js?v=16","./plant-ecology.js?v=4","./app.js?v=25","./auth.js?v=5","./features.js?v=9","./i18n.js?v=5","./lab.js?v=5","./garden-model.js?v=1","./garden-ui.js?v=1","./recommendation-model.js?v=1","./community-model.js?v=1","./community-ui.js?v=2","./recommendation-ui.js?v=2","./garden-cloud.js?v=3","./pages.js?v=11","./dialog-accessibility.js?v=1","./manifest.webmanifest","./icon.svg"];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE&&(k.startsWith('kita-')||k.startsWith('bioglow-'))).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
