@@ -123,7 +123,7 @@
     if(/^[A-Z][a-z-]+\s+[a-z]/.test(String(shown || ''))) return genus || 'taim';
     return name || shown || scientific || 'taim';
   }
-  function aliasFor(query){ return window.KITAPlantDB?.find(query)?.scientific || window.KITAPlantDB?.restriction(query)?.scientific || SIMPLE_NAMES[norm(query)] || EXTRA_NAMES[norm(query)] || null; }
+  function aliasFor(query){ const risk=window.KITAPlantDB?.restriction(query);return window.KITAPlantDB?.find(query)?.scientific || (risk?.rank==='species'?risk.scientific:null) || SIMPLE_NAMES[norm(query)] || EXTRA_NAMES[norm(query)] || null; }
 
   async function fetchWithTimeout(url, options={}, timeoutMs=6000){
     const controller = new AbortController();
