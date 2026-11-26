@@ -45,3 +45,5 @@
 
 /* Community planner */
 .community-controls{grid-template-columns:minmax(0,260px)}.community-metrics .garden-metric-value{font-size:clamp(18px,3vw,26px)}.community-table{min-width:520px}.garden-calendar-table td.projected{background:#dceaf5;color:#245b79;font-weight:800}.community-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}@media(max-width:720px){.community-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.cloud-panel{margin-bottom:20px}.cloud-controls{display:flex;flex-wrap:wrap;align-items:end;gap:8px;margin:12px 0}.cloud-controls label{flex:1;min-width:170px;display:grid;gap:5px;font-size:13px;font-weight:650}.cloud-controls select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink)}.cloud-mode{font-weight:750;color:var(--green)}.cloud-status{font-size:13px;font-weight:650;min-height:1.3em}.cloud-plan{padding:10px;border:1px solid var(--line);border-radius:10px;margin:8px 0;overflow-wrap:anywhere}.cloud-plan summary{font-weight:700;cursor:pointer}.cloud-plan p,.cloud-plan ul{font-size:13px}.cloud-danger{color:#8f2f25}.cloud-panel button:disabled{opacity:.5;cursor:not-allowed}
