@@ -746,7 +746,7 @@
     $('suggest').classList.add('hidden');
     renderChosenPlant();
   }
-  function reset(){
+  function reset(shouldNavigate=true){
     cancelAddressSearch(true);
     state.analysisId += 1;
     clearPlant();
@@ -762,7 +762,7 @@
     $('resultContent').classList.add('hidden');
     $('resultEmpty').classList.remove('hidden');
     setStatus('Vali taim ja koht.');
-    scrollToId('analyze');
+    if(shouldNavigate!==false)scrollToId('analyze');
   }
 
   function bindEvents(){
@@ -810,6 +810,8 @@
     try{
       window.KITAPlantNames={...EXTRA_NAMES};
       bindEvents();
+      let previousOwner=window.KITAAuth?.getState().userId||null;
+      document.addEventListener('kita:auth',()=>{const owner=window.KITAAuth?.getState().userId||null;if(previousOwner&&owner!==previousOwner)reset(false);previousOwner=owner;});
       document.addEventListener('kita:page', e=>{if(e.detail.page==='analysis'){ if(!state.map && window.L) initMap(); else if(!state.map) initMap(); requestAnimationFrame(()=>state.map?.invalidateSize()); }});
       window.KITASelectLocation=(lat,lon)=>{ if(window.KITAPages) window.KITAPages.reveal('map'); setLocation(lat,lon,'salvestatud analüüs'); requestAnimationFrame(()=>state.map?.invalidateSize()); };
       debug('KITA 2.0 käivitus');
