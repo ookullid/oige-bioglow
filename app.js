@@ -67,7 +67,7 @@
   function invalidateAnalysis(){
     ++state.analysisId;
     const result=$('resultContent');
-    result.dataset.ready='false';
+    result.dataset.ready='false';delete result.dataset.completedAt;
     result.classList.add('hidden');
     $('resultEmpty').classList.remove('hidden');
     $('analyzeBtn').disabled=false;
@@ -719,6 +719,7 @@
       renderConservation(nearby);
       await loadEnvironment(state.location.lat, state.location.lon, analysisId);
       if(analysisId!==state.analysisId) return;
+      $('resultContent').dataset.completedAt=new Date().toISOString();
       $('resultContent').dataset.ready='true';
       $('resultContent').dataset.analysisId=String(analysisId);
       setStatus('Analüüs valmis.', 'ok');
