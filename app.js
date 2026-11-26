@@ -96,7 +96,7 @@
       return n === i || n.startsWith(i + ' ') || i.startsWith(n + ' ');
     });
   }
-  function isInvasive(name){ return matchesName(name, INVASIVE); }
+  function isInvasive(name){ return !!window.KITAPlantDB?.restriction(name) || matchesName(name, INVASIVE); }
   function protectedInfo(name){
     if(matchesName(name, PROTECTED_I)) return {category:'I', common:null};
     if(matchesName(name, PROTECTED_II)) return {category:'II', common:null};
@@ -123,7 +123,7 @@
     if(/^[A-Z][a-z-]+\s+[a-z]/.test(String(shown || ''))) return genus || 'taim';
     return name || shown || scientific || 'taim';
   }
-  function aliasFor(query){ return SIMPLE_NAMES[norm(query)] || EXTRA_NAMES[norm(query)] || null; }
+  function aliasFor(query){ return window.KITAPlantDB?.find(query)?.scientific || window.KITAPlantDB?.restriction(query)?.scientific || SIMPLE_NAMES[norm(query)] || EXTRA_NAMES[norm(query)] || null; }
 
   async function fetchWithTimeout(url, options={}, timeoutMs=6000){
     const controller = new AbortController();
@@ -516,7 +516,7 @@
     let copy = 'KITA ei kasuta piirkonna vaatlusarvu kasvukoha sobivuse määramiseks. Praegune prototüüp ei võrdle veel taime kinnitatud valguse ja mullavajadusi sinu kasvukohaga.';
     if(invasive){
       kind = 'bad'; title = 'Ära istuta loodusesse'; label = 'VÕÕR- VÕI INVASIIVSE LIIGI HOIATUS';
-      copy = 'Liik on KITA kontrollnimekirjas; kontrolli kehtivat Keskkonnaameti teavet.';
+      const risk=window.KITAPlantDB?.restriction(state.plant.scientific); copy=risk?.status==='national_prohibited'?'Liik kuulub Eesti keelatud võõrliikide nimekirja. Kontrolli Keskkonnaameti ajakohast infot.':risk?.status==='problematic'?'Keskkonnaamet nimetab liiki probleemseks võõrliigiks. KITA ei soovita seda istutada.':'Liik on KITA kontrollnimekirjas; kontrolli kehtivat Keskkonnaameti teavet.';
     } else if(protection?.category === 'I' || protection?.category === 'II'){
       kind = 'maybe'; title = 'Kaitsealune liik'; label = `${protection.category} KAITSEKATEGOORIA`;
       copy = 'KITA ei anna I–II kaitsekategooria liigile tavapärast istutussoovitust. Ära võta taimi loodusest.';
