@@ -270,6 +270,7 @@
       state.map.setView([lat, lon], 15);
       setTimeout(() => state.map?.invalidateSize(), 80);
     }
+    delete $('coordText').dataset.exactCoords;
     $('coordText').textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
     $('mapBadge').textContent = source;
     $('locationState').innerHTML = `<span class="dot ready"></span><span>Asukoht valmis: ${esc(source)}</span>`;
@@ -298,7 +299,9 @@
       setStatus('Kasuta JPG või JPEG fotot.', 'error');
       return;
     }
+    if(file.size>15*1024*1024){setStatus('Foto on liiga suur (max 15 MB).','error');return;}
     invalidateAnalysis();
+    $('photoConsent').checked=false;
     if($('preview').src.startsWith('blob:')) URL.revokeObjectURL($('preview').src);
     state.file = file;
     $('preview').src = URL.createObjectURL(file);
@@ -330,6 +333,7 @@
     invalidateAnalysis();
     if($('preview').src.startsWith('blob:')) URL.revokeObjectURL($('preview').src);
     state.file = null;
+    if($('photoConsent'))$('photoConsent').checked=false;
     $('files').value = '';
     $('photoRow').classList.add('hidden');
     $('preview').src = '';
@@ -370,7 +374,7 @@
       ? '<span class="tag danger">võõr-/invasiivse liigi kontroll</span>'
       : protection
         ? `<span class="tag protected">🛡 ${protection.category} kaitsekategooria</span>`
-        : '<span class="tag normal">tavapärane liik</span>';
+        : '<span class="tag normal">staatus eraldi kontrollida</span>';
     const image = state.plant.media
       ? `<div class="chosen-photo"><img src="${esc(state.plant.media)}" alt="${esc(state.plant.common)}" loading="lazy" referrerpolicy="no-referrer"></div>`
       : '<div class="chosen-photo">🌿</div>';
@@ -490,6 +494,7 @@
   }
   async function photoAI(file, location){
     if(!file) return 'Fotot ei kasutatud';
+    if(!$('photoConsent')?.checked)return 'Foto jäi seadmesse; saatmise nõusolek puudub';
     try{
       const form = new FormData();
       form.append('image', file);
@@ -517,9 +522,9 @@
     if(invasive){
       kind = 'bad'; title = 'Ära istuta loodusesse'; label = 'VÕÕR- VÕI INVASIIVSE LIIGI HOIATUS';
       const risk=window.KITAPlantDB?.restriction(state.plant.scientific); copy=risk?.status==='national_prohibited'?'Liik kuulub Eesti keelatud võõrliikide nimekirja. Kontrolli Keskkonnaameti ajakohast infot.':risk?.status==='problematic'?'Keskkonnaamet nimetab liiki probleemseks võõrliigiks. KITA ei soovita seda istutada.':'Liik on KITA kontrollnimekirjas; kontrolli kehtivat Keskkonnaameti teavet.';
-    } else if(protection?.category === 'I' || protection?.category === 'II'){
+    } else if(protection){
       kind = 'maybe'; title = 'Kaitsealune liik'; label = `${protection.category} KAITSEKATEGOORIA`;
-      copy = 'KITA ei anna I–II kaitsekategooria liigile tavapärast istutussoovitust. Ära võta taimi loodusest.';
+      copy = 'KITA ei anna kaitsealusele liigile tavapärast istutussoovitust. Ära võta taimi loodusest.';
     }
     const siteNote = hasSiteContext ? '<div class="safety-note">Sinu kasvukohakirjeldus on lisainfo. Praegu ei võrrelda seda automaatselt kinnitatud liigipõhiste vajadustega.</div>' : '';
     root.className = `verdict-card ${kind}`;
@@ -570,17 +575,18 @@
 
   async function loadAlternativeImage(item, index){
     const rootId = `alt-image-${index}`;
+    const generation=state.analysisId;
     try{
       const data = await fetchJson(`https://api.gbif.org/v1/occurrence/search?taxon_key=${item.key}&media_type=StillImage&limit=5`, {}, 3000);
       const media = (data.results || []).flatMap(row => row.media || []).find(row => row.identifier);
       const root = $(rootId);
-      if(!root) return;
+      if(!root||generation!==state.analysisId) return;
       root.innerHTML = media?.identifier
         ? `<img src="${esc(media.identifier)}" alt="${esc(item.simple)}" loading="lazy" referrerpolicy="no-referrer">`
         : '<div class="plant-placeholder">🌿<small>Pilt pole saadaval</small></div>';
     } catch(error){
       const root = $(rootId);
-      if(root) root.innerHTML = '<div class="plant-placeholder">🌿<small>Pilt pole saadaval</small></div>';
+      if(root&&generation===state.analysisId) root.innerHTML = '<div class="plant-placeholder">🌿<small>Pilt pole saadaval</small></div>';
     }
   }
 
@@ -748,6 +754,7 @@
     state.location = null;
     if(state.map && state.marker){ state.map.removeLayer(state.marker); state.marker = null; }
     state.map?.setView([58.65,25.1],7);
+    delete $('coordText').dataset.exactCoords;
     $('coordText').textContent = 'Koordinaadid puuduvad';
     $('mapBadge').textContent = 'Klõpsa kaardil';
     $('locationState').innerHTML = '<span class="dot"></span><span>Asukohta pole valitud</span>';
@@ -781,7 +788,7 @@
       if(query.length < 2){ $('suggest').classList.add('hidden'); return; }
       state.searchTimer = setTimeout(() => loadSuggestions(query), 220);
     });
-    ['siteLight','siteMoisture','siteSoil','siteWind'].forEach(id=>$(id)?.addEventListener('change',invalidateAnalysis));
+    ['siteLight','siteMoisture','siteSoil','siteWind','photoConsent'].forEach(id=>$(id)?.addEventListener('change',invalidateAnalysis));
     $('clearPlant').addEventListener('click', clearPlant);
     $('pickFile').addEventListener('click', () => $('files').click());
     $('files').addEventListener('change', () => readPhoto($('files').files[0]));
