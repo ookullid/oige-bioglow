@@ -1,9 +1,7 @@
 (() => {
   'use strict';
 
-  const SUPABASE_URL = 'https://katkzrlbxrllspcgdxew.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_DF8nS5ZdH97_kTe32U_O1w_xZP8Qh52';
-  const sb = window.supabase?.createClient ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+  const sb=window.KITAAuth?.getState().client||null;
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? '').replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[ch]));
 
@@ -65,7 +63,7 @@
     });
     return {
       plant, coords:c, verdict, score, chips:chipTexts, evidence, env,
-      image:$('preview')?.src || '', locationSource:$('mapBadge')?.textContent?.trim() || '',
+      image:'', locationSource:$('mapBadge')?.textContent?.trim() || '',
       analyzedAt:new Date().toISOString()
     };
   }
@@ -141,8 +139,9 @@
 
   async function getUser(){
     if(!sb) return null;
-    const {data} = await sb.auth.getSession();
-    return data?.session?.user || null;
+    const {data,error} = await sb.auth.getSession();
+    const user=data?.session?.user||null;
+    return !error&&user?.id===window.KITAAuth?.getState().userId?user:null;
   }
 
   function requireAnalysis(){
@@ -164,6 +163,7 @@
     const a = requireAnalysis(); if(!a || !a.coords) return;
     const fingerprint=user.id+'|'+$('resultContent').dataset.analysisId;
     if(lastManualSave===fingerprint){alert('See analüüs on juba salvestatud.');return;}
+    if(!confirm('Salvestada see analüüs koos kuvatud asukoha koordinaatidega sinu kontole?'))return;
     const extras = buildExtraSnapshot(a);
     a.extras = extras;
     const {error} = await sb.from('saved_analyses').insert({
@@ -206,6 +206,7 @@
     if(!user){ root.innerHTML = '<div class="feature-empty">Logi sisse, et näha oma analüüse.</div>'; return; }
     root.innerHTML = '<div class="feature-empty">Laadin…</div>';
     const {data,error} = await sb.from('saved_analyses').select('*').eq('user_id',user.id).order('created_at',{ascending:false}).limit(50);
+    if(window.KITAAuth?.getState().userId!==user.id)return;
     if(error){ root.innerHTML = '<div class="feature-empty">Analüüse ei saanud laadida.</div>'; return; }
     if(!data?.length){ root.innerHTML = '<div class="feature-empty">Sul pole veel salvestatud analüüse.</div>'; return; }
     root.innerHTML = data.map(item => `<article class="feature-card" data-analysis-id="${item.id}"><small>${new Date(item.created_at).toLocaleString('et-EE')}</small><h3>${esc(item.plant_name)}</h3><div class="latin">${esc(item.scientific_name || '')}</div><p><b>${esc(item.verdict || 'Tulemus puudub')}</b>${item.score != null ? ` · ${item.score}% kohalik andmetugi` : ''}</p><p>📍 ${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}</p><div class="feature-actions"><button class="mini-btn primary" data-open-analysis="${item.id}">Ava</button><button class="mini-btn" data-share-saved="${item.id}">Jaga</button><button class="mini-btn danger" data-delete-analysis="${item.id}">Kustuta</button></div></article>`).join('');
@@ -328,10 +329,12 @@
   async function loadFavorites(){
     const root = $('favoritesList'); const user = await getUser();
     if(!user){ root.innerHTML='<div class="feature-empty">Logi sisse, et näha lemmikuid.</div>'; return; }
-    const {data} = await sb.from('favorite_plants').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    const {data,error} = await sb.from('favorite_plants').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    if(window.KITAAuth?.getState().userId!==user.id)return;
+    if(error){root.textContent='Lemmikuid ei saanud laadida.';return;}
     root.innerHTML = data?.length ? data.map(x=>`<div class="feature-card"><b>★ ${esc(x.plant_name)}</b><div class="latin">${esc(x.scientific_name||'')}</div><div class="feature-actions"><button class="mini-btn" data-use-fav="${esc(x.plant_name)}">Kasuta analüüsis</button><button class="mini-btn danger" data-del-fav="${x.id}">Eemalda</button></div></div>`).join('') : '<div class="feature-empty">Lemmikuid pole veel.</div>';
     root.querySelectorAll('[data-del-fav]').forEach(btn=>btn.onclick=async()=>{await sb.from('favorite_plants').delete().eq('id',btn.dataset.delFav);loadFavorites();});
-    root.querySelectorAll('[data-use-fav]').forEach(btn=>btn.onclick=()=>{ $('plantInput').value=btn.dataset.useFav; closePanel(); $('plantInput').dispatchEvent(new Event('input',{bubbles:true})); document.getElementById('analyze')?.scrollIntoView({behavior:'smooth'}); });
+    root.querySelectorAll('[data-use-fav]').forEach(btn=>btn.onclick=()=>{ $('plantInput').value=btn.dataset.useFav; closePanel(); $('plantInput').dispatchEvent(new Event('input',{bubbles:true})); window.KITAPages?.reveal('analyze'); });
   }
 
   function renderSeasonRisk(){
@@ -371,15 +374,17 @@
     const root=$('historyMapWrap'); const user=await getUser();
     if(!user){root.innerHTML='<div class="feature-empty">Logi sisse, et näha oma analüüside kaarti.</div>';return;}
     const {data,error}=await sb.from('saved_analyses').select('id,plant_name,scientific_name,latitude,longitude,verdict,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(100);
-    if(error||!data?.length){root.innerHTML='<div class="feature-empty">Salvestatud kohti pole veel.</div>';return;}
-    root.innerHTML='<div id="historyMap" class="history-map"></div>';
+    if(window.KITAAuth?.getState().userId!==user.id)return;
+    if(error||!data?.length){root.innerHTML='<div class="feature-empty">Salvestatud kohti pole veel või päring ebaõnnestus.</div>';return;}
+    if(!window.L){root.textContent='Kaarditeek pole saadaval.';return;}
     if(historyMap){historyMap.remove();historyMap=null;}
+    root.innerHTML='<div id="historyMap" class="history-map"></div>';
     historyMap=L.map('historyMap').setView([58.65,25.1],7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(historyMap);
     const bounds=[];
     data.forEach(item=>{const ll=[Number(item.latitude),Number(item.longitude)];bounds.push(ll);L.marker(ll).addTo(historyMap).bindPopup(`<b>${esc(item.plant_name)}</b><br>${esc(item.verdict||'')}<br>${new Date(item.created_at).toLocaleDateString('et-EE')}`);});
     if(bounds.length>1) historyMap.fitBounds(bounds,{padding:[25,25]}); else historyMap.setView(bounds[0],14);
-    setTimeout(()=>historyMap.invalidateSize(),100);
+    setTimeout(()=>historyMap?.invalidateSize(),100);
   }
 
   function renderFreshness(){
@@ -413,13 +418,13 @@
     const a=requireAnalysis(); if(!a) return;
     const user=await getUser(); if(!user){alert('Tagasiside saatmiseks logi sisse.');return;}
     const comment=$('feedbackComment')?.value?.trim()||null;
-    const {error}=await sb.from('analysis_feedback').insert({user_id:user.id,analysis_title:`${a.plant.common} · ${a.verdict}`,plant_name:a.plant.common,latitude:a.coords?.lat||null,longitude:a.coords?.lon||null,rating,comment});
+    const {error}=await sb.from('analysis_feedback').insert({user_id:user.id,analysis_title:`${a.plant.common} · ${a.verdict}`,plant_name:a.plant.common,latitude:null,longitude:null,rating,comment});
     if(error){console.error(error);alert('Tagasiside saatmine ebaõnnestus.');return;}
     $('feedbackStatus').textContent='Aitäh! Tagasiside salvestati.';
   }
 
   function renderFeedback(){
-    $('feedbackView').innerHTML=`<div class="feature-card"><h3>Kas KITA soovitus tundus mõistlik?</h3><p>Tagasiside aitab prototüüpi testida. See ei muuda automaatselt teadusandmeid.</p><textarea id="feedbackComment" class="feature-textarea" placeholder="Soovi korral kirjuta, mis oli hea või vale…"></textarea><div class="feature-actions"><button class="mini-btn primary" id="feedbackYes">👍 Tundus õige</button><button class="mini-btn" id="feedbackNo">👎 Tundus vale</button></div><div id="feedbackStatus" class="share-note"></div></div>`;
+    $('feedbackView').innerHTML=`<div class="feature-card"><h3>Kas KITA soovitus tundus mõistlik?</h3><p>Tagasiside salvestatakse sinu kontole ilma asukoha koordinaatideta. See ei muuda automaatselt teadusandmeid.</p><textarea id="feedbackComment" class="feature-textarea" placeholder="Soovi korral kirjuta, mis oli hea või vale…"></textarea><div class="feature-actions"><button class="mini-btn primary" id="feedbackYes">👍 Tundus õige</button><button class="mini-btn" id="feedbackNo">👎 Tundus vale</button></div><div id="feedbackStatus" class="share-note"></div></div>`;
     $('feedbackYes').onclick=()=>submitFeedback('helpful'); $('feedbackNo').onclick=()=>submitFeedback('not_helpful');
   }
 
@@ -442,7 +447,7 @@
     if(key===lastSnapshotKey) return;
     lastSnapshotKey=key;
     a.extras=buildExtraSnapshot(a);
-    try{localStorage.setItem('bioglow_last_analysis',JSON.stringify(a));}catch(error){console.debug('KITA: browser storage unavailable',error);}
+    // No persistent browser snapshot of location or account-related analysis.
   }
 
   function buildUI(){
@@ -453,7 +458,7 @@
     (document.getElementById("kitaTools") || document.body).appendChild(launcher);
 
     const panel = document.createElement('div');
-    panel.id='featurePanel'; panel.className='feature-panel hidden';
+    panel.id='featurePanel'; panel.className='feature-panel hidden';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','featureTitle');
     panel.innerHTML=`<div class="feature-shell"><button class="feature-close" id="featureClose">×</button><div class="feature-topline"><div><span class="eyebrow">KITA+</span><h2 id="featureTitle">Minu KITA</h2></div><button class="mini-btn" id="modeToggle">Koolirežiim</button></div><div class="feature-tabs"><button class="feature-tab active" data-tab="saved">Minu analüüsid</button><button class="feature-tab" data-tab="history">Ajalugu kaardil</button><button class="feature-tab" data-tab="favorites">Lemmikud</button><button class="feature-tab" data-tab="compare">Võrdlus</button><button class="feature-tab" data-tab="grow">Mis siin kasvaks?</button><button class="feature-tab" data-tab="explain">Miks?</button><button class="feature-tab" data-tab="season">Kasvukoha lisahinnang</button><button class="feature-tab" data-tab="avoid">Mida vältida?</button><button class="feature-tab expert-only" data-tab="layers">Foto + kaart</button><button class="feature-tab expert-only" data-tab="considered">Mida arvestati?</button><button class="feature-tab expert-only" data-tab="freshness">Andmete värskus</button><button class="feature-tab expert-only" data-tab="sources">Andmeallikad</button><button class="feature-tab" data-tab="warning">Hoiatused</button><button class="feature-tab" data-tab="feedback">Tagasiside</button></div>
     <section class="feature-view" data-view="saved"><div class="feature-toolbar"><button class="mini-btn primary" id="saveCurrentBtn">Salvesta praegune analüüs</button><button class="mini-btn" id="shareCurrentBtn">Jaga tulemust</button><button class="mini-btn" id="pdfBtn">PDF raport</button></div><div class="feature-grid"><div id="savedList"></div><div id="savedDetail"></div></div></section>
     <section class="feature-view hidden" data-view="history"><div id="historyMapWrap"></div></section>
@@ -480,7 +485,7 @@
     $('saveCurrentBtn').onclick=saveCurrent; $('shareCurrentBtn').onclick=shareCurrent; $('favoriteCurrentBtn').onclick=togglePlantFavorite; $('runCompareBtn').onclick=comparePlants; $('runGrowBtn').onclick=whatGrowsHere; $('pdfBtn').onclick=generatePdf;
     $('myKITABtn').onclick=()=>openPanel('saved'); $('growHereBtn').onclick=()=>openPanel('grow'); $('compareBtn').onclick=()=>openPanel('compare');
     $('modeToggle').onclick=()=>setMode(document.body.dataset.bioglowMode==='expert'?'school':'expert');
-    setMode(localStorage.getItem('bioglow_mode')||'school');
+    setMode('school');
   }
 
   function injectResultActions(){
@@ -525,6 +530,9 @@
 
   function init(){
     buildUI(); observeAnalysis(); registerOffline(); window.KITAFeatures={open:openPanel};
+    try{localStorage.removeItem('bioglow_last_analysis');}catch{}
+    let lastOwner=window.KITAAuth?.getState().userId||null;
+    document.addEventListener('kita:auth',()=>{const owner=window.KITAAuth?.getState().userId||null;if(owner===lastOwner)return;lastOwner=owner;closePanel();if(historyMap){historyMap.remove();historyMap=null;}for(const id of ['savedList','savedDetail','favoritesList','historyMapWrap'])$(id)?.replaceChildren();});
     document.addEventListener('keydown',e=>{if(e.key==='Escape' && !$('featurePanel')?.classList.contains('hidden')) closePanel();});
   }
 
