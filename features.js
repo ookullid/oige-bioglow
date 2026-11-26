@@ -211,7 +211,7 @@
     $('savedDetail').innerHTML = `<div class="feature-card"><h3>${esc(item.plant_name)}</h3><div class="latin">${esc(item.scientific_name || '')}</div><div class="score-line"><span>Tulemus</span><strong>${esc(item.verdict || '–')}</strong></div><div class="score-line"><span>Asukoht</span><strong>${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}</strong></div>${item.score != null ? `<div class="score-line"><span>Kohalik andmetugi</span><strong>${item.score}%</strong></div>` : ''}<div class="explain-box">${Object.entries(d.env || {}).map(([key,v]) => `<div class="explain-item"><b>${esc(key)}</b><span>${esc(v?.value || '')} ${esc(v?.detail || '')}</span></div>`).join('')}</div></div>`;
   }
 
-  function savedShareText(item){ return item ? `KITA analüüs: ${item.plant_name} — ${item.verdict || 'tulemus'}\nAsukoht: ${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}${item.score != null ? `\nKohalik andmetugi: ${item.score}%` : ''}` : ''; }
+  function savedShareText(item){ return item ? `KITA analüüs: ${item.plant_name} — ${item.verdict || 'tulemus'}\nVarasema analüüsi kokkuvõte. Asukohta ei jagata.` : ''; }
 
   async function shareText(text){
     if(!text) return;
@@ -451,7 +451,7 @@
     <section class="feature-view hidden" data-view="history"><div id="historyMapWrap"></div></section>
     <section class="feature-view hidden" data-view="favorites"><div class="feature-toolbar"><button class="mini-btn primary" id="favoriteCurrentBtn">★ Lisa valitud taim lemmikuks</button></div><div id="favoritesList" class="feature-grid"></div></section>
     <section class="feature-view hidden" data-view="compare"><p>Võrdle 2–3 taime sama koha kohalike vaatlusandmete põhjal.</p><div class="feature-toolbar"><input id="cmp1" class="feature-input" placeholder="nt kadakas"><input id="cmp2" class="feature-input" placeholder="nt tamm"><input id="cmp3" class="feature-input" placeholder="soovi korral kolmas"><button class="mini-btn primary" id="runCompareBtn">Võrdle</button></div><div id="compareResult" class="compare-result"></div></section>
-    <section class="feature-view hidden" data-view="grow"><p>KITA otsib valitud koha ümbrusest tugevama kohaliku vaatlusandmega taimi. Tuntud probleemsed võõrliigid filtreeritakse välja.</p><button class="mini-btn primary" id="runGrowBtn">Otsi kohalikke kandidaate</button><div id="growHereResult" class="native-grid" style="margin-top:14px"></div></section>
+    <section class="feature-view hidden" data-view="grow"><p>KITA kuvab valitud koha ümbruses GBIF-is vaadeldud liike. Need ei ole kinnitatud istutussoovitused. Tuntud probleemsed võõrliigid filtreeritakse välja.</p><button class="mini-btn primary" id="runGrowBtn">Otsi kohalikke kandidaate</button><div id="growHereResult" class="native-grid" style="margin-top:14px"></div></section>
     <section class="feature-view hidden" data-view="explain"><div id="explainResult"></div></section>
     <section class="feature-view hidden" data-view="season"><div id="seasonRiskView"></div></section>
     <section class="feature-view hidden" data-view="avoid"><div id="avoidView"></div></section>
