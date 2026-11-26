@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="features.css?v=2">
   <link rel="stylesheet" href="lab.css?v=1">
   <link rel="stylesheet" href="design.css?v=1">
-  <link rel="stylesheet" href="pages.css?v=3">
+  <link rel="stylesheet" href="pages.css?v=4">
 </head>
 <body>
 <header class="topbar">
@@ -205,6 +205,17 @@
   <div data-page="garden" id="garden" hidden>
     <section class="wrap page-heading"><span class="eyebrow green" data-et="SINU ELURIKKUSE TEEKOND" data-en="YOUR BIODIVERSITY JOURNEY">SINU ELURIKKUSE TEEKOND</span><h1 data-et="Minu aed" data-en="My garden">Minu aed</h1><p data-et="Pane kirja oma aias kasvavad taimed. Praegu on nimekiri salvestatud ainult sellesse brauserisse." data-en="List the plants in your garden. The list is currently stored only in this browser.">Pane kirja oma aias kasvavad taimed. Praegu on nimekiri salvestatud ainult sellesse brauserisse.</p></section>
     <section class="wrap page-grid garden-layout"><article class="panel page-card"><span class="page-kicker" data-et="TAIMEDE NIMEKIRI" data-en="PLANT INVENTORY">TAIMEDE NIMEKIRI</span><h2><span id="gardenCount">0</span> <span data-et="taimekirjet" data-en="plant entries">taimekirjet</span></h2><form id="gardenForm" class="page-form"><label for="gardenPlant" data-et="Lisa taime nimi" data-en="Add a plant name">Lisa taime nimi</label><div><input id="gardenPlant" class="plant-input" maxlength="120" required list="gardenNames" placeholder="nt nurmenukk"><datalist id="gardenNames"></datalist><button class="btn primary" type="submit" data-et="Lisa" data-en="Add">Lisa</button></div></form><p id="gardenStatus" class="muted" role="status"></p><ul id="gardenList" class="garden-list"></ul><a href="#catalog" class="btn secondary" data-et="Sirvi taimekataloogi" data-en="Browse plant catalog">Sirvi taimekataloogi</a></article><article class="panel page-card garden-dashboard-card"><span class="page-kicker" data-et="TEADUSANDMETEL PÕHINEV VAADE" data-en="EVIDENCE-BASED VIEW">TEADUSANDMETEL PÕHINEV VAADE</span><h2 data-et="Minu aia analüüs" data-en="My garden analysis">Minu aia analüüs</h2><p data-et="Lisa või eemalda taimi – kalender, seosed ja võimalikud puudujäägid uuenevad kohe. See on andmepõhine prototüüp, mitte elurikkuse skoor." data-en="Add or remove plants – the calendar, associations and possible gaps update immediately. This is an evidence-based prototype, not a biodiversity score.">Lisa või eemalda taimi – kalender, seosed ja võimalikud puudujäägid uuenevad kohe. See on andmepõhine prototüüp, mitte elurikkuse skoor.</p><div id="gardenDashboard"></div></article></section>
+    <section class="wrap panel page-card recommendation-panel" aria-labelledby="recommendTitle">
+      <span class="page-kicker" data-et="JÄRGMISED SAMMUD" data-en="NEXT STEPS">JÄRGMISED SAMMUD</span><h2 id="recommendTitle" data-et="Personaalsed taimekandidaadid" data-en="Personalised plant candidates">Personaalsed taimekandidaadid</h2>
+      <p data-et="Kirjelda kasvukohta ja vali soovi korral tolmeldajarühm. KITA otsib dokumenteeritud seostega taimi, mis võiksid sinu aia nimekirja täiendada." data-en="Describe the planting site and optionally choose a pollinator group. KITA finds documented plant associations that could complement your garden inventory.">Kirjelda kasvukohta ja vali soovi korral tolmeldajarühm. KITA otsib dokumenteeritud seostega taimi, mis võiksid sinu aia nimekirja täiendada.</p>
+      <div class="eco-filters recommend-filters">
+      <label><span data-et="Valgus" data-en="Light">Valgus</span><select id="recommendLight"><option value="" data-et="Ei tea" data-en="Unknown">Ei tea</option><option value="sun" data-et="Päikeseline" data-en="Sunny">Päikeseline</option><option value="part" data-et="Poolvarjuline" data-en="Part shade">Poolvarjuline</option><option value="shade" data-et="Varjuline" data-en="Shady">Varjuline</option></select></label>
+      <label><span data-et="Mulla niiskus" data-en="Soil moisture">Mulla niiskus</span><select id="recommendMoisture"><option value="" data-et="Ei tea" data-en="Unknown">Ei tea</option><option value="dry_tolerant" data-et="Kuivem (kuivataluvus)" data-en="Drier (drought tolerance)">Kuivem (kuivataluvus)</option><option value="moderate" data-et="Parasniiske" data-en="Moderately moist">Parasniiske</option><option value="moist_preferred" data-et="Püsivalt niiske (mitte üleujutatud)" data-en="Consistently moist (not flooded)">Püsivalt niiske (mitte üleujutatud)</option></select></label>
+      <label><span data-et="Mullaviljakus" data-en="Soil nutrients">Mullaviljakus</span><select id="recommendNutrients"><option value="" data-et="Ei tea" data-en="Unknown">Ei tea</option><option value="poor" data-et="Toitainevaene" data-en="Nutrient-poor">Toitainevaene</option><option value="rich" data-et="Toitainerikas" data-en="Nutrient-rich">Toitainerikas</option></select></label>
+      <label><span data-et="Tolmeldaja fookus" data-en="Pollinator focus">Tolmeldaja fookus</span><select id="recommendFocus"><option value="" data-et="Kõik rühmad" data-en="All groups">Kõik rühmad</option><option value="bumblebee" data-et="Kimalased" data-en="Bumblebees">Kimalased</option><option value="solitary_bee" data-et="Erakmesilased" data-en="Solitary bees">Erakmesilased</option><option value="hoverfly" data-et="Sirelased" data-en="Hoverflies">Sirelased</option><option value="butterfly" data-et="Päevaliblikad" data-en="Butterflies">Päevaliblikad</option><option value="specialist_bee" data-et="Spetsialiseerunud erakmesilased" data-en="Specialist solitary bees">Spetsialiseerunud erakmesilased</option></select></label></div>
+      <label class="recommend-checkbox"><input type="checkbox" id="recommendNative"><span data-et="Näita ainult allikaga kinnitatud Eesti pärismaiseid liike" data-en="Only show species with documented Estonian native status">Näita ainult allikaga kinnitatud Eesti pärismaiseid liike</span></label>
+      <div id="recommendationResults"></div>
+    </section>
   </div>
   <div data-page="catalog" id="catalog" hidden>
     <section class="wrap page-heading"><span class="eyebrow green" data-et="TAIMEDE AVASTAMINE" data-en="EXPLORE PLANTS">TAIMEDE AVASTAMINE</span><h1 data-et="Taimekataloog" data-en="Plant catalog">Taimekataloog</h1><p data-et="Allikaviidetega ökoloogilised algandmed ja taimenimede register. Puuduvad andmed on märgitud teadmata. Nime esinemine ei tähenda istutussoovitust." data-en="Source-linked ecological starter data and plant name index. Missing data are marked unknown. Inclusion is not a planting recommendation.">Allikaviidetega ökoloogilised algandmed ja taimenimede register. Puuduvad andmed on märgitud teadmata. Nime esinemine ei tähenda istutussoovitust.</p></section>
@@ -272,6 +283,8 @@
 <script src="lab.js?v=4"></script>
 <script src="garden-model.js?v=1"></script>
 <script src="garden-ui.js?v=1"></script>
-<script src="pages.js?v=7"></script>
+<script src="recommendation-model.js?v=1"></script>
+<script src="recommendation-ui.js?v=1"></script>
+<script src="pages.js?v=8"></script>
 </body>
 </html>
