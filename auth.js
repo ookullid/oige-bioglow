@@ -71,6 +71,7 @@
 
   function updateAccountUI(session) {
     currentSession = session || null;
+    document.dispatchEvent(new CustomEvent('kita:auth'));
     const user = session?.user || null;
     const guestButton = $('accountButton');
     const menu = $('accountMenu');
@@ -166,6 +167,7 @@
   }
 
   async function logout() {
+    if(window.KITAGardenCloud && !window.KITAGardenCloud.canLeave())return;
     try {
       await client.auth.signOut();
       $('accountMenu')?.classList.add('hidden');
@@ -468,5 +470,6 @@
     // Analüüs salvestatakse ainult kasutaja nupuvajutusel (features.js).
   }
 
+  window.KITAAuth=Object.freeze({getState:()=>({client,userId:currentSession?.user?.id||null})});
   document.addEventListener('DOMContentLoaded', init);
 })();
