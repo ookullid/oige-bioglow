@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#0b2b1d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <title>KITA — kasvukoha infoga taimevaliku abiline</title>
-  <meta name="description" content="KITA aitab hinnata, kas valitud taim sobib konkreetsesse kohta, ning pakub kohalike andmete põhjal alternatiive.">
+  <title>KITA – elurikkam aed algab teadlikust valikust</title>
+  <meta name="description" content="KITA aitab uurida kohalikke taimeliike, kasvukoha tingimusi ja looduskaitseandmeid. Meie eesmärk on elurikkam haljastus.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://api.gbif.org">
@@ -17,11 +17,12 @@
   <link rel="stylesheet" href="auth.css?v=1">
   <link rel="stylesheet" href="features.css?v=2">
   <link rel="stylesheet" href="lab.css?v=1">
+  <link rel="stylesheet" href="design.css?v=1">
 </head>
 <body>
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <a class="brand" href="#top"><span class="brand-dot">✦</span><span>KITA</span><span class="version">FINAL</span></a>
+    <a class="brand" href="#top"><span class="brand-dot">✦</span><span>KITA</span><span class="version">BETA</span></a>
     <nav class="nav-actions" aria-label="Põhinavigatsioon">
       <button class="btn ghost" data-scroll="results">Tulemused</button>
       <button class="btn primary compact" data-scroll="analyze">Analüüsi</button>
@@ -44,21 +45,26 @@
 <main id="top">
   <section class="hero wrap">
     <div class="hero-copy">
-      <span class="eyebrow">TAIM × KOHT × KESKKOND</span>
-      <h1>Kas see taim sobib siia?</h1>
-      <p>Vali taim ja kirjeldada kasvukohta. KITA näitab kohalikke vaatlusi ja keskkonnaandmeid, kuid märgib selgelt, mida need andmed ei tõesta.</p>
+      <span class="eyebrow">ELURIKKUS ALGAB SINUST</span>
+      <h1>Anna loodusele rohkem ruumi.</h1>
+      <p>Tee teadlikumaid taimevalikuid. Uuri kohalikke liike, kasvukoha tingimusi ja looduskaitseandmeid – samm elurikkama aia poole.</p>
       <div class="hero-actions">
         <button class="btn primary large" data-scroll="analyze">Alusta analüüsi →</button>
         <button class="btn hero-secondary" data-scroll="how">Kuidas see töötab?</button>
       </div>
     </div>
     <div class="hero-stats" aria-label="KITA võimalused">
-      <div class="hero-stat"><span>✓</span><div><small>Ettevaatlik hinnang</small><b>Vaatlused ei asenda kasvukoha kontrolli</b></div></div>
-      <div class="hero-stat"><span>◉</span><div><small>Keskkond</small><b>Muld · maastik · kõrgus · niiskus · valgus</b></div></div>
-      <div class="hero-stat"><span>🛡</span><div><small>Looduskaitse</small><b>Kaitsekategooria + piirkonna soovitus</b></div></div>
+      <div class="hero-stat"><span>01</span><div><small>TAIMED</small><b>Uuri kohalikke liike</b></div></div>
+      <div class="hero-stat"><span>02</span><div><small>KASVUKOHT</small><b>Tunne oma aia tingimusi</b></div></div>
+      <div class="hero-stat"><span>03</span><div><small>LOODUSKAITSE</small><b>Kontrolli liigi staatust</b></div></div>
     </div>
   </section>
 
+  <section class="wrap tool-section" aria-labelledby="toolsTitle">
+    <div><span class="eyebrow green" data-i18n="tools.eyebrow">TÖÖRIISTAD</span><h2 id="toolsTitle" data-i18n="tools.title">Avasta KITA võimalusi</h2></div>
+    <div id="kitaTools"></div>
+  </section>
+  <section class="wrap analysis-heading"><div><span class="eyebrow green" data-i18n="analysis.eyebrow">TAIMEANALÜÜS</span><h2 data-i18n="analysis.title">Uuri taime ja kasvukohta</h2></div><p data-i18n="analysis.note">Esialgne hinnang, mitte kasvugarantii.</p></section>
   <section id="analyze" class="wrap workspace">
     <article class="panel controls-panel">
       <div class="panel-head"><div><span class="step">1 / 2</span><h2>Vali taim</h2></div><span class="panel-icon">🌱</span></div>
@@ -79,6 +85,7 @@
       <div id="chosen" class="chosen hidden"></div>
 
       <div class="divider"></div>
+      <details class="site-details"><summary data-i18n="site.more">Lisa kasvukoha tingimused (valikuline)</summary>
       <fieldset class="site-context">
         <legend data-i18n="site.title">Kirjelda istutuskohta (valikuline)</legend>
         <p class="muted" data-i18n="site.help">Need vastused aitavad kohta kirjeldada. Prototüüp ei võrdle neid veel automaatselt iga liigi vajadustega.</p>
@@ -98,7 +105,7 @@
         <select id="siteWind" class="plant-input">
           <option value="" data-i18n="site.unknown">Ei tea</option><option value="sheltered" data-i18n="site.sheltered">Tuule eest varjatud</option><option value="exposed" data-i18n="site.exposed">Avatud tuultele</option>
         </select>
-      </fieldset>
+      </fieldset></details>
       <div class="divider"></div>
       <div class="panel-head"><div><span class="step">2 / 2</span><h2>Vali koht</h2></div><span class="panel-icon">📍</span></div>
       <p class="muted" data-i18n="place.help">Otsi aadressi, klõpsa kaardil, kasuta seadme asukohta või lisa GPS-andmetega JPG/JPEG foto.</p>
@@ -187,12 +194,13 @@
       <article><span>04</span><b>Kohalik tõend</b><p>GBIF-i avalikud vaatlused näitavad, millised taimed piirkonnas päriselt esinevad.</p></article>
     </div>
   </section>
+  <footer class="wrap kita-footer"><div><strong>KITA</strong> <span>· FLL BioGlow · Öökullid</span></div><p data-i18n="footer.note">Arendusjärgus projekt. Soovituste teaduslikku täpsust ja mõju elurikkusele alles uurime.</p></footer>
 </main>
 
 <div id="authModal" class="auth-modal hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle">
   <div class="auth-card">
     <button id="authClose" class="auth-close" type="button" aria-label="Sulge">×</button>
-    <span class="eyebrow">BIOGLOW KONTO</span>
+    <span class="eyebrow">KITA KONTO</span>
     <h2 id="authTitle">Sinu KITA</h2>
     <p>Logi sisse või loo konto. Konto töötab Supabase'i kaudu.</p>
 
@@ -227,8 +235,8 @@
 <script src="plant-data.js?v=16"></script>
 <script src="app.js?v=19"></script>
 <script src="auth.js?v=1"></script>
-<script src="features.js?v=3"></script>
-<script src="i18n.js?v=3"></script>
+<script src="features.js?v=4"></script>
+<script src="i18n.js?v=4"></script>
 <script src="lab.js?v=3"></script>
 </body>
 </html>
