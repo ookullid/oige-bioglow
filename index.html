@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="features.css?v=2">
   <link rel="stylesheet" href="lab.css?v=1">
   <link rel="stylesheet" href="design.css?v=1">
-  <link rel="stylesheet" href="pages.css?v=6">
+  <link rel="stylesheet" href="pages.css?v=7">
 </head>
 <body>
 <header class="topbar">
@@ -134,7 +134,7 @@
       </form>
 
       <details class="site-details"><summary data-et="Foto ja GPS (lisavalik)" data-en="Photo and GPS (optional)">Foto ja GPS (lisavalik)</summary>
-      <p class="muted" data-et="Kui lisad foto, saadetakse see analüüsi ajal koos valitud asukohaga tuvastusteenusele." data-en="If you add a photo, analysis sends it and the selected location to the identification service.">Kui lisad foto, saadetakse see analüüsi ajal koos valitud asukohaga tuvastusteenusele.</p>
+      <p class="muted" data-et="Foto GPS-i loetakse seadmes. Foto ja täpne asukoht saadetakse tuvastusteenusele ainult eraldi nõusolekul." data-en="Photo GPS is read locally. Photo and precise location are sent to the identification service only with separate consent.">Kui lisad foto, saadetakse see analüüsi ajal koos valitud asukohaga tuvastusteenusele.</p>
       <div id="drop" class="drop-zone">
         <input id="files" type="file" accept="image/jpeg,image/jpg" hidden>
         <div class="drop-icon">↥</div>
@@ -147,7 +147,9 @@
         <button id="removePhoto" class="icon-btn" type="button" aria-label="Eemalda foto">×</button>
       </div>
 
+      <label class="recommend-checkbox"><input id="photoConsent" type="checkbox"><span data-et="Luban foto ja selle metaandmete ning valitud asukoha saatmist AI-tuvastusteenusele (valikuline)." data-en="Allow sending the photo, its metadata and selected location to the AI identification service (optional).">Luban foto ja selle metaandmete ning valitud asukoha saatmist AI-tuvastusteenusele (valikuline).</span></label>
       </details>
+      <p class="muted" data-et="Kaart ja keskkonnaanalüüs kasutavad välisteenuseid, mis võivad saada valitud koordinaadid. Ära vali tundlikku leiukohta." data-en="Map and environmental analysis use external services that may receive selected coordinates. Avoid sensitive locations.">Kaart ja keskkonnaanalüüs kasutavad välisteenuseid, mis võivad saada valitud koordinaadid. Ära vali tundlikku leiukohta.</p>
       <div class="location-actions">
         <button id="useLocation" class="btn secondary" type="button">◎ Kasuta minu asukohta</button>
         <button id="pickMap" class="btn secondary" type="button">⌖ Vali kaardilt</button>
@@ -245,7 +247,7 @@
   </div>
   <div data-page="account" id="account" hidden>
     <section class="wrap page-heading"><span class="eyebrow green" data-et="SINU KITA" data-en="YOUR KITA">SINU KITA</span><h1 data-et="Minu konto" data-en="My account">Minu konto</h1><p data-et="Halda kontot, salvestatud analüüse ja lemmikuid." data-en="Manage your account, saved analyses and favorites.">Halda kontot, salvestatud analüüse ja lemmikuid.</p></section>
-    <section class="wrap page-grid"><article class="panel page-card"><h2 data-et="Konto" data-en="Account">Konto</h2><p id="accountPageState" class="muted"></p><button class="btn primary" id="pageLogin" data-et="Logi sisse / loo konto" data-en="Sign in / create account">Logi sisse / loo konto</button><button id="pageLogout" class="btn secondary" hidden data-et="Logi välja" data-en="Sign out">Logi välja</button></article><article class="panel page-card"><h2 data-et="Minu andmed" data-en="My data">Minu andmed</h2><div class="page-actions"><button class="btn secondary" data-feature-open="saved" data-et="Analüüside ajalugu" data-en="Saved analyses">Analüüside ajalugu</button><button class="btn secondary" data-feature-open="favorites" data-et="Lemmiktaimed" data-en="Favorites">Lemmiktaimed</button><button class="btn secondary" data-feature-open="history" data-et="Ajalugu kaardil" data-en="Map history">Ajalugu kaardil</button></div></article><article class="panel page-card"><h2 data-et="Seaded" data-en="Settings">Seaded</h2><p class="muted" data-et="Ligipääsetavus ja rakenduse paigaldamine. Asukoha ümardamine on praegu ainult kuvamise abivahend, mitte täielik andmekaitse." data-en="Accessibility and app installation. Location rounding is currently a display aid, not comprehensive privacy protection.">Ligipääsetavus ja rakenduse paigaldamine. Asukoha ümardamine on praegu ainult kuvamise abivahend, mitte täielik andmekaitse.</p><button class="btn secondary" id="pageSettings" data-et="Ava seaded" data-en="Open settings">Ava seaded</button></article></section>
+    <section class="wrap page-grid"><article class="panel page-card"><h2 data-et="Konto" data-en="Account">Konto</h2><p id="accountPageState" class="muted"></p><button class="btn primary" id="pageLogin" data-et="Logi sisse / loo konto" data-en="Sign in / create account">Logi sisse / loo konto</button><button id="pageLogout" class="btn secondary" hidden data-et="Logi välja" data-en="Sign out">Logi välja</button></article><article class="panel page-card"><h2 data-et="Minu andmed" data-en="My data">Minu andmed</h2><div class="page-actions"><button class="btn secondary" data-feature-open="saved" data-et="Analüüside ajalugu" data-en="Saved analyses">Analüüside ajalugu</button><button class="btn secondary" data-feature-open="favorites" data-et="Lemmiktaimed" data-en="Favorites">Lemmiktaimed</button><a class="btn secondary" href="#garden" data-et="Minu aiad" data-en="My gardens">Minu aiad</a><button class="btn secondary" data-feature-open="history" data-et="Ajalugu kaardil" data-en="Map history">Ajalugu kaardil</button></div></article><article class="panel page-card"><h2 data-et="Seaded" data-en="Settings">Seaded</h2><p class="muted" data-et="Ligipääsetavus ja rakenduse paigaldamine. Asukoha ümardamine on praegu ainult kuvamise abivahend, mitte täielik andmekaitse." data-en="Accessibility and app installation. Location rounding is currently a display aid, not comprehensive privacy protection.">Ligipääsetavus ja rakenduse paigaldamine. Asukoha ümardamine on praegu ainult kuvamise abivahend, mitte täielik andmekaitse.</p><button class="btn secondary" id="pageSettings" data-et="Ava seaded" data-en="Open settings">Ava seaded</button></article></section>
   </div>
   <div data-page="home" class="home-info">
   <section id="how" class="wrap how panel">
@@ -292,24 +294,24 @@
 </div>
 
 <div id="toast" class="toast hidden" role="status"></div>
-<script src="https://unpkg.com/exifr/dist/lite.umd.js"></script>
+<script src="https://unpkg.com/exifr@7.1.3/dist/lite.umd.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="plant-data.js?v=16"></script>
 <script src="plant-ecology.js?v=4"></script>
-<script src="app.js?v=23"></script>
-<script src="auth.js?v=4"></script>
-<script src="features.js?v=7"></script>
-<script src="i18n.js?v=4"></script>
-<script src="lab.js?v=4"></script>
+<script src="app.js?v=24"></script>
+<script src="auth.js?v=5"></script>
+<script src="features.js?v=8"></script>
+<script src="i18n.js?v=5"></script>
+<script src="lab.js?v=5"></script>
 <script src="garden-model.js?v=1"></script>
 <script src="garden-ui.js?v=1"></script>
 <script src="recommendation-model.js?v=1"></script>
 <script src="community-model.js?v=1"></script>
 <script src="community-ui.js?v=2"></script>
 <script src="recommendation-ui.js?v=2"></script>
-<script src="garden-cloud.js?v=2"></script>
-<script src="pages.js?v=9"></script>
+<script src="garden-cloud.js?v=3"></script>
+<script src="pages.js?v=10"></script>
 </body>
 </html>
