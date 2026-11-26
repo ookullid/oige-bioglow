@@ -1,10 +1,8 @@
 (() => {
   'use strict';
 
-  const SUPABASE_URL='https://katkzrlbxrllspcgdxew.supabase.co';
-  const SUPABASE_KEY='sb_publishable_DF8nS5ZdH97_kTe32U_O1w_xZP8Qh52';
   const WORKER='https://bioglow.robootikaring.workers.dev';
-  const sb=window.supabase?.createClient ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY) : null;
+  const sb=window.KITAAuth?.getState().client||null;
   const $=id=>document.getElementById(id);
   const esc=value=>String(value??'').replace(/[&<>\"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[ch]));
   const i18n=()=>window.KITAI18n;
@@ -18,7 +16,7 @@
     return m ? {lat:Number(m[1]),lon:Number(m[2])} : null;
   }
   function currentCoords(){
-    const node=$('coordText');
+    const node=$('coordText');if(!parseCoords(node?.textContent))return null;
     if(node?.dataset.exactCoords){
       const c=parseCoords(node.dataset.exactCoords); if(c) return c;
     }
@@ -88,7 +86,7 @@
       <section class="lab-view hidden" data-lab-view="demo"><div class="lab-card"><div class="demo-stage"><div class="demo-visual"><span class="demo-ribbon">FLL DEMO · töötab ka ilma API-ta</span><div><small>NÄIDISANALÜÜS</small><h3>Harilik kadakas</h3><p><i>Juniperus communis</i></p></div><div><div class="demo-score">?</div><b>Sobivust ei saa kinnitada</b><p>Piirkonna vaatlused näitavad ümbruses tehtud leide, kuid ei määra taime sobivust sinu kasvukohale.</p></div></div><div><h3>Mida KITA näitab?</h3><div class="demo-list"><div>◌ Piirkonna vaatlused: lisakontekst, mitte sobivuse tõend</div><div>✓ Valgus: sobiv</div><div>✓ Muld: mõõdukas kuni kuiv</div><div>◌ Niiskus: kontrolli kohapeal</div><div>✓ Kaitsestaatus: tavapärane liik</div><div>⚗ Sobivushinnang: kinnitamata</div></div><p class="lab-note">See on demonstratsioon, mitte päris selle koha analüüs. Demo on mõeldud esitluseks juhuks, kui internet või mõni API ei tööta.</p></div></div></div></section>
       <section class="lab-view hidden" data-lab-view="diagnostics"><div class="lab-card"><div class="lab-toolbar"><h3 style="margin-right:auto">Teenuste diagnostika</h3><button id="runDiagnostics" class="mini-btn primary" data-i18n="lab.refresh">Värskenda</button></div><div id="diagList" class="diag-list"></div><h3>Lehe enesetest</h3><div id="selfTest" class="lab-selftest"></div></div></section>
       <section class="lab-view hidden" data-lab-view="stats"><div class="lab-card"><h3>KITA projekti koondstatistika</h3><p data-i18n="lab.stats.note"></p><div id="statsGrid" class="stats-grid"></div></div></section>
-      <section class="lab-view hidden" data-lab-view="settings"><div class="lab-card"><h3 data-i18n="lab.settings">Seaded</h3><div class="settings-list"><div class="setting-row"><div><b data-i18n="lab.privacy">Privaatsusrežiim</b><p>Hägustab kasutajale kuvatava ja jagatava GPS-asukoha umbes kilomeetri täpsuseni.</p></div><label class="switch"><input id="privacyToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.contrast">Kõrge kontrast</b><p>Tugevam visuaalne eristus.</p></div><label class="switch"><input id="contrastToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.text">Suurem tekst</b><p>Suurendab teksti kogu KITA lehel.</p></div><label class="switch"><input id="textToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b>Liikumisefektid</b><p>Sujuvad ilmumised ja üleminekud; süsteemi reduced-motion seadistus on alati ülimuslik.</p></div><label class="switch"><input id="motionToggle" type="checkbox" checked><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.install">Paigalda äpp</b><p id="pwaStatus" class="pwa-status">Kontrollin paigaldusvõimalust…</p></div><button id="installApp" class="mini-btn primary" data-i18n="lab.install">Paigalda äpp</button></div></div></div></section>
+      <section class="lab-view hidden" data-lab-view="settings"><div class="lab-card"><h3 data-i18n="lab.settings">Seaded</h3><div class="settings-list"><div class="setting-row"><div><b data-i18n="lab.privacy">Privaatsusrežiim</b><p>Ümardab ekraanil kuvatava koordinaadi. Kaart ja välisteenused võivad kasutada täpset asukohta. See ei ole täielik privaatsuskaitse.</p></div><label class="switch"><input id="privacyToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.contrast">Kõrge kontrast</b><p>Tugevam visuaalne eristus.</p></div><label class="switch"><input id="contrastToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.text">Suurem tekst</b><p>Suurendab teksti kogu KITA lehel.</p></div><label class="switch"><input id="textToggle" type="checkbox"><span></span></label></div><div class="setting-row"><div><b>Liikumisefektid</b><p>Sujuvad ilmumised ja üleminekud; süsteemi reduced-motion seadistus on alati ülimuslik.</p></div><label class="switch"><input id="motionToggle" type="checkbox" checked><span></span></label></div><div class="setting-row"><div><b data-i18n="lab.install">Paigalda äpp</b><p id="pwaStatus" class="pwa-status">Kontrollin paigaldusvõimalust…</p></div><button id="installApp" class="mini-btn primary" data-i18n="lab.install">Paigalda äpp</button></div></div></div></section>
     </div>`;
     document.body.appendChild(modal);
     $('labClose').onclick=closeLab;
@@ -246,7 +244,7 @@
     const note=[userNote,siteNote? `Kasvukoht: ${siteNote}`: ''].filter(Boolean).join('\n');
     const {error}=await sb.from('expert_review_requests').insert({
       user_id:u.id,plant_name:p.common||p.scientific,scientific_name:p.scientific||null,
-      latitude:c?.lat||null,longitude:c?.lon||null,verdict:currentVerdict()||null,note:note||null
+      latitude:null,longitude:null,verdict:currentVerdict()||null,note:note||null
     });
     if(error){console.error(error);setStatus(root,'Küsimuse salvestamine ebaõnnestus.',true);return;}
     setStatus(root,'Küsimus salvestati sinu kontole. Ekspert ega meeskond ei saa sellest automaatset teadet.');
@@ -276,11 +274,8 @@
     $('selfTest').textContent=`KITA self-test: ${passed}/${tests.length}\n`+tests.map(([n,ok])=>`${ok?'PASS':'FAIL'}  ${n}`).join('\n');
   }
   async function loadStats(){
-    const root=$('statsGrid'); if(!root||!sb)return; root.innerHTML='<div class="lab-note">Laadin…</div>';
-    const {data,error}=await sb.rpc('bioglow_public_stats');
-    if(error){console.error(error);root.innerHTML='<div class="lab-note">Statistikat ei saanud laadida.</div>';return;}
-    const d=data||{}; const cards=[['Analüüse',d.analyses||0],['Kasutajaid',d.users||0],['Lemmikuid',d.favorite_plants||0],['Tagasisidet',d.feedback||0],['Eri taimi',d.distinct_plants||0]];
-    root.innerHTML=cards.map(([k,v])=>`<div class="stat-card"><small>${esc(k)}</small><b>${Number(v).toLocaleString('et-EE')}</b></div>`).join('');
+    const node=$('statsGrid');if(node)node.textContent='Projekti koondstatistika on kuni administraatori ligipääsu kontrolli valmimiseni välja lülitatud.';
+
   }
 
   function setPrivacy(on){localStorage.setItem('bioglow_privacy',on?'1':'0');applyPrivacy();syncSettings();}
@@ -291,7 +286,7 @@
       const on=localStorage.getItem('bioglow_privacy')==='1';
       const raw=node.textContent||''; const c=parseCoords(raw);
       if(on){
-        if(c && !node.dataset.exactCoords)node.dataset.exactCoords=raw;
+        if(!c){delete node.dataset.exactCoords;return;}if(!node.dataset.exactCoords)node.dataset.exactCoords=raw;
         const exact=parseCoords(node.dataset.exactCoords||raw);
         if(exact)node.textContent=`${exact.lat.toFixed(2)}, ${exact.lon.toFixed(2)} · privaatsusrežiim`;
         $('privacyPill')?.classList.remove('hidden');
@@ -320,7 +315,7 @@
 
   function setupPrivacyObserver(){
     const node=$('coordText'); if(!node)return;
-    const obs=new MutationObserver(()=>{if(localStorage.getItem('bioglow_privacy')==='1'&&!privacyGuard){const raw=node.textContent||'';const c=parseCoords(raw);if(c&&!/privaatsusrežiim/.test(raw)){node.dataset.exactCoords=raw;applyPrivacy();}}});
+    const obs=new MutationObserver(()=>{if(localStorage.getItem('bioglow_privacy')==='1'&&!privacyGuard){const raw=node.textContent||'';const c=parseCoords(raw);if(!c){delete node.dataset.exactCoords;return;}if(c&&!/privaatsusrežiim/.test(raw)){node.dataset.exactCoords=raw;applyPrivacy();}}});
     obs.observe(node,{childList:true,characterData:true,subtree:true}); applyPrivacy();
   }
   function setupMotion(){
@@ -345,6 +340,7 @@
     document.addEventListener('bioglow:language',()=>{i18n()?.apply(document);});
     setContrast(localStorage.getItem('bioglow_contrast')==='1'); setLargeText(localStorage.getItem('bioglow_large_text')==='1');
     window.KITALab={open:openLab,heatmap:renderHeatmap,diagnostics:runDiagnostics,selfTest:runSelfTest};
+    let lastOwner=window.KITAAuth?.getState().userId||null;document.addEventListener('kita:auth',()=>{const owner=window.KITAAuth?.getState().userId||null;if(owner===lastOwner)return;lastOwner=owner;closeLab();for(const id of ['expertRequestNote','expertRequestStatus']){const n=$(id);if(n){if('value' in n)n.value='';else n.textContent='';}}});
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
