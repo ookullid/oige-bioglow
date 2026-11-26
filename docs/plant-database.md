@@ -1,12 +1,14 @@
-# KITA taimede andmebaas v1.0.0
+# KITA taimede andmebaas v1.0.1
 
 Kuupäev: 2026-11-26. Piirkond: Eesti. Andmestik on algversioon, mitte eksperdi valideeritud soovituste süsteem.
 
 ## Sisu
 
-- 14 liigipõhist ökoloogia kirjet (üks osaline). Iga teadaoleva välja juures allikaviide, kuupäev, kontekst; null = teadmata. Õitsemiskuud on Tallinna haljastuskataloogi ligikaudsed ajad, mitte täpsed Eesti fenoloogilised prognoosid. Röövikute toidutaim ei võrdu õiekülastaja ega nektaritaimega. Oligolektilised mesilased on erakmesilaste alarühm; neid ei summeerita. Kasvupinnase toitainesisaldus ei võrdu lõimisega. Kuivataluvus ei tähenda, et taim eelistab kuiva mulda. Kataloogi päritolu 'looduslik' ei tõenda iseenesest Eesti pärismaisu; eraldi väli nativeEstonia on praegu ainult ühe liigi puhul kinnitatud.
+- 14 liigipõhist ökoloogia kirjet (üks osaline). Iga teadaoleva välja juures allikaviide, kuupäev, kontekst; null = teadmata. Õitsemiskuud on Tallinna haljastuskataloogi ligikaudsed ajad, mitte täpsed Eesti fenoloogilised prognoosid. Röövikute toidutaim ei võrdu õiekülastaja ega nektaritaimega. Oligolektilised mesilased on erakmesilaste alarühm; neid ei summeerita. Kasvupinnase toitainesisaldus ei võrdu lõimisega. Kuivataluvus ei tähenda, et taim eelistab kuiva mulda. Kataloogi päritolu 'looduslik' ei tõenda iseenesest Eesti pärismaisu; eraldi väli nativeEstonia on praegu viie liigi puhul eraldi USDA GRIN allikaga kinnitatud.
 - 15 hoiatusreeglit: 13 Eesti keelatud võõrtaimede kirjet (sh kogu ambroosia perekond) ja 2 probleemset võõrliiki. Keelatud ja probleemne eristatud. EL nimekiri ja kaitsealuste liikide täielik ajakohane kontroll veel puudu; hoiatuse puudumine ei tähenda lubatud või soovitatud liiki.
 - Olemasolev nimiindeks on jätkuvalt otsitav, aga sellele ei omistata kontrollimata ökoloogilisi andmeid.
+
+Olemasolevaid probleemseid taimi saab aia inventuuri märkida, kuid neid ei soovitata istutada. Aia kirje ei ole istutussoovitus.
 
 ## Allikad ja laiendamine
 
