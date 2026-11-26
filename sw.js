@@ -1,5 +1,5 @@
-const CACHE='kita-v13';
-const CORE=["./","./index.html","./style.css?v=18","./auth.css?v=1","./features.css?v=2","./lab.css?v=1","./design.css?v=1","./pages.css?v=2","./plant-data.js?v=16","./plant-ecology.js?v=1","./app.js?v=22","./auth.js?v=3","./features.js?v=7","./i18n.js?v=4","./lab.js?v=4","./pages.js?v=3","./manifest.webmanifest","./icon.svg"];
+const CACHE='kita-v14';
+const CORE=["./","./index.html","./style.css?v=18","./auth.css?v=1","./features.css?v=2","./lab.css?v=1","./design.css?v=1","./pages.css?v=2","./plant-data.js?v=16","./plant-ecology.js?v=2","./app.js?v=23","./auth.js?v=3","./features.js?v=7","./i18n.js?v=4","./lab.js?v=4","./pages.js?v=4","./manifest.webmanifest","./icon.svg"];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE&&(k.startsWith('kita-')||k.startsWith('bioglow-'))).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
