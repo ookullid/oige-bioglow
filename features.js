@@ -147,17 +147,23 @@
 
   function requireAnalysis(){
     const a = currentAnalysis();
-    if(!$('resultContent') || $('resultContent').classList.contains('hidden') || !a.verdict){
+    if(!$('resultContent') || $('resultContent').classList.contains('hidden') || $('resultContent').dataset.ready!=='true' || !a.verdict){
       alert('Tee enne üks analüüs valmis.');
       return null;
     }
     return a;
   }
 
+  let savingAnalysis=false, lastManualSave='';
   async function saveCurrent(){
+    if(savingAnalysis) return;
+    savingAnalysis=true;
+    try{
     const user = await getUser();
     if(!user){ alert('Analüüsi salvestamiseks logi kõigepealt sisse.'); return; }
     const a = requireAnalysis(); if(!a || !a.coords) return;
+    const fingerprint=user.id+'|'+$('resultContent').dataset.analysisId;
+    if(lastManualSave===fingerprint){alert('See analüüs on juba salvestatud.');return;}
     const extras = buildExtraSnapshot(a);
     a.extras = extras;
     const {error} = await sb.from('saved_analyses').insert({
@@ -173,7 +179,9 @@
       details:a
     });
     if(error){ console.error(error); alert('Salvestamine ebaõnnestus.'); return; }
+    lastManualSave=fingerprint;
     alert('Analüüs salvestatud.');
+    }finally{savingAnalysis=false;}
   }
 
   async function togglePlantFavorite(){
@@ -429,12 +437,12 @@
   }
 
   function persistSnapshot(){
-    const a=currentAnalysis(); if(!a.verdict) return;
+    const a=currentAnalysis(); if(!a.verdict || $('resultContent').dataset.ready!=='true') return;
     const key=`${a.plant.common}|${a.verdict}|${a.coords?.lat||''}|${a.coords?.lon||''}`;
     if(key===lastSnapshotKey) return;
     lastSnapshotKey=key;
     a.extras=buildExtraSnapshot(a);
-    localStorage.setItem('bioglow_last_analysis',JSON.stringify(a));
+    try{localStorage.setItem('bioglow_last_analysis',JSON.stringify(a));}catch(error){console.debug('KITA: browser storage unavailable',error);}
   }
 
   function buildUI(){
@@ -503,11 +511,11 @@
   function observeAnalysis(){
     const target=$('resultContent'); if(!target) return;
     const observer=new MutationObserver(()=>{
-      if(!target.classList.contains('hidden') && $('verdict')?.querySelector('h3')){
+      if(!target.classList.contains('hidden') && target.dataset.ready==='true' && $('verdict')?.querySelector('h3')){
         injectResultActions(); persistSnapshot();
       }
     });
-    observer.observe(target,{subtree:true,childList:true,attributes:true});
+    observer.observe(target,{subtree:true,childList:true,attributes:true,attributeFilter:['class','data-ready']});
   }
 
   function registerOffline(){
