@@ -64,7 +64,7 @@
     return {
       plant, coords:c, verdict, score, chips:chipTexts, evidence, env,
       image:'', locationSource:$('mapBadge')?.textContent?.trim() || '',
-      analyzedAt:new Date().toISOString()
+      analyzedAt:$('resultContent')?.dataset.completedAt||null
     };
   }
 
@@ -295,8 +295,8 @@
   function renderWarning(){
     const root = $('warningResult'); const p = selectedPlant(); const v = $('verdict')?.textContent || '';
     const text = `${p.common} ${p.scientific} ${v}`.toLowerCase();
-    const invasive = invasiveNames.some(n => text.includes(n));
-    const protectedHit = /kaitsekategooria|kaitsealune/.test(text);
+    const invasive = !!window.KITAPlantDB?.restriction(p.scientific||p.common)||invasiveNames.some(n => text.includes(n));
+    const protectedHit = /\b(?:I|II|III) kaitsekategooria\b|kaitsealune liik/i.test(v);
     const trait=traitFor(p);
     root.innerHTML = `${invasive ? '<div class="warning-box danger"><b>⚠️ Invasiivse või probleemse liigi hoiatus</b><p>Seda taime ei tohiks loodusesse istutada. Kontrolli enne istutamist ametlikke Eesti võõrliikide nõudeid.</p></div>' : protectedHit ? '<div class="warning-box"><b>🛡️ Kaitsealuse liigi hoiatus</b><p>Ära võta kaitsealuseid taimi loodusest ega jaga tundlikke leiukohti. KITA ei käsitle neid tavapärase istutussoovitusena.</p></div>' : '<div class="warning-box"><b>✓ Eraldi kaitse- või invasiivsushäiret ei tuvastatud</b><p>See ei asenda ametlikku liigikaitse kontrolli.</p></div>'}<div class="warning-box soft"><b>Ohutuse prototüübi märkus</b><p>${esc(trait.safety)}</p></div>`;
   }
@@ -389,7 +389,7 @@
 
   function renderFreshness(){
     const root=$('freshnessView'); const a=requireAnalysis(); if(!a){root.innerHTML='';return;}
-    const now=new Date();
+    const now=new Date($('resultContent').dataset.completedAt||Date.now());
     root.innerHTML=`<div class="feature-card"><h3>Andmete värskus</h3><div class="explain-box"><div class="explain-item"><b>KITA analüüs</b><span>${now.toLocaleString('et-EE')}</span></div><div class="explain-item"><b>GBIF vaatlused</b><span>Päriti analüüsi ajal; GBIF kirjed võivad pärineda eri aastatest.</span></div><div class="explain-item"><b>Open-Meteo</b><span>Päriti analüüsi ajal kasutatud mudelist.</span></div><div class="explain-item"><b>SoilGrids</b><span>Staatilisem mullamudel; ei ole reaalajas mõõtmine.</span></div><div class="explain-item"><b>MaRu kihid</b><span>Kaardikiht kuvatakse teenusest; uuendussagedus sõltub allikast.</span></div></div><p class="share-note">KITA eristab reaalajas päringuid, mudelandmeid ja ajaloolisi vaatlusandmeid.</p></div>`;
   }
 
