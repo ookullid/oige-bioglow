@@ -18,6 +18,8 @@ function canLeave(){return !busy&&(!dirty()||root.confirm(tr('Aias on salvestama
 function status(et,en){message=[et,en];paintStatus();}
 function paintStatus(){const n=$('cloudGardenStatus');if(n)n.textContent=message?tr(...message):active?(dirty()?tr('Salvestamata muudatused','Unsaved changes'):tr('Pilveaed salvestatud','Cloud garden saved')):tr('Kohalik mustand – ei ole kontoga jagatud','Local draft – not shared to account');}
 function update(){if(!api)return;const signed=!!user;$('cloudSigned').hidden=!signed;$('cloudGuest').hidden=signed;$('cloudActive').hidden=!active;$('cloudGardenSelect').disabled=busy;$('cloudGardenName').disabled=busy;$('cloudNewName').disabled=busy;$('cloudPlanName').disabled=busy;
+ for(const id of controls)$(id).disabled=busy;
+ $('gardenPlant').disabled=busy;for(const btn of $('gardenForm').querySelectorAll('button'))btn.disabled=busy;for(const btn of $('gardenList').querySelectorAll('button'))btn.disabled=busy;
  for(const id of ['cloudCreate','cloudCopy','cloudOpen','cloudRefresh','cloudLocal','cloudSave','cloudDelete','cloudPlanSave'])$(id).disabled=busy||(['cloudSave','cloudDelete','cloudLocal','cloudPlanSave'].includes(id)&&!active)||(id==='cloudPlanSave'&&(!latestPlan?.plants?.length||dirty()));
  $('cloudMode').textContent=active?tr('Pilveaed: ','Cloud garden: ')+active.name:tr('Kohalik mustand','Local draft');
  const select=$('cloudGardenSelect'),selected=select.value;select.replaceChildren();const blank=document.createElement('option');blank.value='';blank.textContent=tr('Vali salvestatud aed','Select saved garden');select.append(blank);
