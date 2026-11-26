@@ -1,7 +1,7 @@
 /* KITA ecological records v1.0; see docs/plant-database.md. */
 (()=>{'use strict';
 const data={
-  "version": "1.0.0",
+  "version": "1.0.1",
   "updated": "2026-11-26",
   "region": "EE",
   "records": [
@@ -937,8 +937,14 @@ const data={
           }
         ]
       },
-      "nativeEstonia": null,
-      "nativeEvidence": [],
+      "nativeEstonia": true,
+      "nativeEvidence": [
+        {
+          "url": "https://npgsweb.ars-grin.gov/gringlobal/taxon/taxonomydetail?id=25913",
+          "publisher": "USDA GRIN",
+          "accessed": "2026-11-26"
+        }
+      ],
       "legalReview": "pending_full_EU_and_protected_species_check"
     },
     {
@@ -1064,8 +1070,14 @@ const data={
           }
         ]
       },
-      "nativeEstonia": null,
-      "nativeEvidence": [],
+      "nativeEstonia": true,
+      "nativeEvidence": [
+        {
+          "url": "https://npgsweb.ars-grin.gov/gringlobal/taxon/taxonomydetail?id=32695",
+          "publisher": "USDA GRIN",
+          "accessed": "2026-11-26"
+        }
+      ],
       "legalReview": "pending_full_EU_and_protected_species_check"
     },
     {
@@ -1315,8 +1327,14 @@ const data={
           }
         ]
       },
-      "nativeEstonia": null,
-      "nativeEvidence": [],
+      "nativeEstonia": true,
+      "nativeEvidence": [
+        {
+          "url": "https://npgsweb.ars-grin.gov/gringlobal/taxon/taxonomydetail?id=36675",
+          "publisher": "USDA GRIN",
+          "accessed": "2026-11-26"
+        }
+      ],
       "legalReview": "pending_full_EU_and_protected_species_check"
     },
     {
@@ -1452,8 +1470,14 @@ const data={
           }
         ]
       },
-      "nativeEstonia": null,
-      "nativeEvidence": [],
+      "nativeEstonia": true,
+      "nativeEvidence": [
+        {
+          "url": "https://npgsweb.ars-grin.gov/gringlobal/taxon/taxonomydetail?id=17105",
+          "publisher": "USDA GRIN",
+          "accessed": "2026-11-26"
+        }
+      ],
       "legalReview": "pending_full_EU_and_protected_species_check"
     },
     {
