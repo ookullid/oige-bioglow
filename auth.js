@@ -5,7 +5,7 @@
   const SUPABASE_KEY = 'sb_publishable_DF8nS5ZdH97_kTe32U_O1w_xZP8Qh52';
 
   const $ = id => document.getElementById(id);
-  let client = null;
+  let client = window.supabase?.createClient ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
   let currentSession = null;
   let lastSavedFingerprint = '';
   let saveTimer = null;
@@ -70,7 +70,10 @@
   }
 
   function updateAccountUI(session) {
+    const previous=currentSession?.user?.id||null;
     currentSession = session || null;
+    const changed=previous!==(currentSession?.user?.id||null);
+    if(changed){closeAnalysesModal();$('analysesList')?.replaceChildren();if($('analysesCount'))$('analysesCount').textContent='0';}
     const user = session?.user || null;
     const guestButton = $('accountButton');
     const menu = $('accountMenu');
@@ -85,7 +88,9 @@
       }
       if (analysesButton) analysesButton.classList.add('hidden');
       menu?.classList.add('hidden');
+      if(nameNode)nameNode.textContent='';if(emailNode)emailNode.textContent='';
       closeAnalysesModal();
+      document.dispatchEvent(new CustomEvent('kita:auth'));
       return;
     }
 
@@ -97,6 +102,8 @@
     if (nameNode) nameNode.textContent = name;
     if (emailNode) emailNode.textContent = user.email || '';
     if (analysesButton) analysesButton.classList.remove('hidden');
+    if(changed)menu?.classList.add('hidden');
+    document.dispatchEvent(new CustomEvent('kita:auth'));
   }
 
   async function login(event) {
@@ -115,6 +122,7 @@
     try {
       const { error } = await client.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      $('loginPassword').value='';
       showMessage('Sisselogimine õnnestus.', 'success');
       setTimeout(closeModal, 450);
     } catch (error) {
@@ -166,6 +174,7 @@
   }
 
   async function logout() {
+    if(window.KITAGardenCloud && !window.KITAGardenCloud.canLeave())return;
     try {
       await client.auth.signOut();
       $('accountMenu')?.classList.add('hidden');
@@ -197,7 +206,7 @@
           <button id="analysesClose" class="auth-close" type="button" aria-label="Sulge">×</button>
           <span class="eyebrow">SINU BIOGLOW</span>
           <div class="analyses-title-row">
-            <div><h2>Minu analüüsid</h2><p>Siin on sinu kontole automaatselt salvestatud analüüsid.</p></div>
+            <div><h2>Minu analüüsid</h2><p>Siin on sinu kontole salvestatud analüüsid.</p></div>
             <span id="analysesCount" class="analyses-count">0</span>
           </div>
           <div id="analysesStatus" class="analyses-status">Laen…</div>
@@ -245,14 +254,17 @@
     const status = $('analysesStatus');
     const list = $('analysesList');
     if (!status || !list) return;
+    const owner=currentSession?.user?.id;if(!owner)return;
     status.textContent = 'Laen sinu analüüse…';
     list.innerHTML = '';
 
     const { data, error } = await client
       .from('saved_analyses')
       .select('id,plant_name,scientific_name,latitude,longitude,location_source,verdict,score,details,created_at')
+      .eq('user_id',owner)
       .order('created_at', { ascending: false })
       .limit(50);
+    if(currentSession?.user?.id!==owner)return;
 
     if (error) {
       console.error('[BioGlow saved analyses]', error);
@@ -263,7 +275,7 @@
     const rows = data || [];
     $('analysesCount').textContent = String(rows.length);
     if (!rows.length) {
-      status.textContent = 'Sul pole veel salvestatud analüüse. Tee uus analüüs ja see ilmub siia automaatselt.';
+      status.textContent = 'Sul pole veel salvestatud analüüse. Tee uus analüüs ja salvesta see nupuga Salvesta.';
       return;
     }
 
@@ -312,6 +324,7 @@
     const longitude = Number(lon);
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
     closeAnalysesModal();
+    if(window.KITASelectLocation){window.KITASelectLocation(latitude,longitude);return;}
     const mapEl = $('map');
     mapEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     const coord = $('coordText');
@@ -421,7 +434,7 @@
     }
 
     createAnalysesUI();
-    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if(!client)return;
 
     $('accountButton')?.addEventListener('click', async event => {
       event.stopPropagation();
@@ -464,8 +477,9 @@
     const { data } = await client.auth.getSession();
     updateAccountUI(data?.session || null);
     client.auth.onAuthStateChange((_event, session) => updateAccountUI(session));
-    watchAnalyses();
+    // Analüüs salvestatakse ainult kasutaja nupuvajutusel (features.js).
   }
 
+  window.KITAAuth=Object.freeze({getState:()=>({client,userId:currentSession?.user?.id||null})});
   document.addEventListener('DOMContentLoaded', init);
 })();

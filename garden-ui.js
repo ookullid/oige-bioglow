@@ -1,0 +1,63 @@
+/* KITA garden dashboard – renders model results using safe DOM text nodes. */
+(function(root){
+'use strict';
+const model=root.KITAGardenModel;
+const labels={bumblebee:['Kimalased','Bumblebees'],solitary_bee:['Erakmesilased','Solitary bees'],hoverfly:['Sirelased','Hoverflies'],butterfly:['Päevaliblikad','Butterflies'],specialist_bee:['Spetsialiseerunud erakmesilased (alarühm)','Specialist solitary bees (subgroup)']};
+const monthNames=[['Jaanuar','January'],['Veebruar','February'],['Märts','March'],['Aprill','April'],['Mai','May'],['Juuni','June'],['Juuli','July'],['August','August'],['September','September'],['Oktoober','October'],['November','November'],['Detsember','December']];
+const shortEt=['Jaan','Veebr','Mär','Apr','Mai','Jun','Jul','Aug','Sept','Okt','Nov','Dets'],shortEn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let selectedMonth=0,selectedGroup='';
+function render(names,db,resolve,onExplore){
+ const target=document.getElementById('gardenDashboard');if(!target||!model)return;
+ const lang=root.KITAI18n?.getLang()==='en'?1:0;
+ const t=(et,en)=>lang?en:et;
+ const mn=m=>monthNames[m-1][lang], short=m=>(lang?shortEn:shortEt)[m-1];
+ const el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n;};
+ const add=(parent,tag,cls,txt)=>{const n=el(tag,cls,txt);parent.append(n);return n;};
+ const btn=(parent,txt,fn,cls='btn secondary')=>{const b=add(parent,'button',cls,txt);b.type='button';b.addEventListener('click',fn);return b;};
+ const data=model.analyse(names,db,resolve);
+ const rerender=()=>render(names,db,resolve,onExplore);
+ target.replaceChildren();
+ const summary=add(target,'div','garden-metrics');
+ for(const [label,val,detail] of [[t('Taimekirjeid','Plant entries'),data.coverage.total,t('unikaalsed kirjed','unique entries')],[t('Kohalik õitsemisaeg','Local flowering data'),data.coverage.bloom+'/'+data.coverage.eligible,t('hoiatuseta taimekirjet','entries without known warning')],[t('Õiekülastajate seosed','Flower visitor associations'),data.coverage.visitors+'/'+data.coverage.eligible,t('hoiatuseta taimekirjet','entries without known warning')],[t('Kaetud kuud','Months with evidence'),data.season.filter(m=>m.status==='documented').length+'/8',t('märts–oktoober, õis + seos','Mar–Oct, flower + association')]]){
+  const card=add(summary,'div','garden-metric');add(card,'span','garden-metric-label',label);add(card,'strong','garden-metric-value',val);add(card,'small','muted',detail);
+ }
+ if(!db){add(target,'p','garden-notice',t('Andmebaas pole saadaval.','Plant database unavailable.'));return;}
+ if(!data.entries.length){add(target,'p','garden-notice',t('Lisa oma esimesed taimed, et kalender ja analüüs saaksid tekkida.','Add your first plants to create a calendar and analysis.'));return;}
+ const calendar=add(target,'section','garden-analysis-section');add(calendar,'h3','',t('Õitsemiskalender','Flowering calendar'));add(calendar,'p','muted',t('Tallinna kataloogi ligikaudsed õitsemiskuud. Roheline = õitsemine ja dokumenteeritud õiekülastaja seos; sinine = ainult õitsemine; ? = teadmata. Euroopa vahemikku siin ei kasutata.','Approximate Tallinn catalog months. Green = flowering with a documented visitor association; blue = flowering only; ? = unknown. European ranges are excluded.'));
+ const monthBar=add(calendar,'div','garden-month-bar');
+ const all=btn(monthBar,t('Kõik kuud','All months'),()=>{selectedMonth=0;rerender();},'garden-month-btn');all.setAttribute('aria-pressed',String(selectedMonth===0));
+ for(const m of model.months){const row=data.monthRows[m-1];const b=btn(monthBar,short(m),()=>{selectedMonth=selectedMonth===m?0:m;rerender();},'garden-month-btn '+row.status);b.setAttribute('aria-pressed',String(selectedMonth===m));b.title=mn(m)+': '+row.associated.length+' '+t('seosega taime','associated plants');}
+ const detail=add(calendar,'div','garden-month-detail');
+ if(selectedMonth){const row=data.monthRows[selectedMonth-1];add(detail,'strong','',mn(selectedMonth)+': '+row.flowering.length+' '+t('õitsemisandmetega taime','plants with flowering data'));add(detail,'p','',row.flowering.length?row.flowering.map(x=>x.name).join(', '):t('Selle kuu kohta pole nimekirjas dokumenteeritud õitsemist.','No documented flowering in this month among listed plants.'));if(row.uncertain.length)add(detail,'small','muted',row.uncertain.length+' '+t('kirjel puudub selle kuu hinnanguks õitsemis- või külastajainfo.','entries lack flowering or visitor information needed for this month.'));}
+ const scroll=add(calendar,'div','garden-calendar-scroll');scroll.tabIndex=0;scroll.setAttribute('aria-label',t('Õitsemiskalendri tabel','Flowering calendar table'));
+ const table=add(scroll,'table','garden-calendar-table');const head=add(table,'thead');const hr=add(head,'tr');add(hr,'th','',t('Taim','Plant'));for(const m of model.months){const th=add(hr,'th',m===selectedMonth?'selected-month':'',short(m));th.scope='col';}
+ const body=add(table,'tbody');
+ const listed=data.eligible.filter(x=>!selectedGroup||x.visitors.includes(selectedGroup));
+ for(const x of listed){const tr=add(body,'tr');const th=add(tr,'th','',x.name);th.scope='row';for(const m of model.months){const active=x.bloom.includes(m);const status=!x.bloom.length?'unknown':active?(x.visitors.length?'associated':'flowering'):'outside';const td=add(tr,'td',status+(m===selectedMonth?' selected-month':''),status==='unknown'?'?':active?'●':'–');td.title=mn(m)+': '+(!x.bloom.length?t('õitsemisaeg teadmata','flowering unknown'):active?(x.visitors.length?t('õitseb; liigipõhine külastajaseos olemas','flowers; species-level visitor association exists'):t('õitseb; külastajainfo teadmata','flowers; visitor info unknown')):t('väljaspool allika õitsemisvahemikku','outside source flowering range'));}}
+ if(!listed.length){add(calendar,'p','garden-notice',t('Valitud rühma kohta pole dokumenteeritud taimekirjeid.','No documented plant entries for this group.'));}
+ const visitors=add(target,'section','garden-analysis-section');add(visitors,'h3','',t('Tolmeldajate seosed','Pollinator associations'));add(visitors,'p','muted',t('Taimeliikide arv dokumenteeritud õiekülastajate rühmade kaupa. See ei näita putukate arvukust, nektarikogust ega tegelikke külastusi konkreetses kuus. Erakmesilaste alarühma ei liideta koguarvule.','Counts of plant species with documented flower visitor groups. Not insect abundance, nectar quantity or observed visits in a particular month. Specialist solitary bees are a subgroup, not added to totals.'));
+ const groupBar=add(visitors,'div','garden-groups');
+ const clear=btn(groupBar,t('Kõik rühmad','All groups'),()=>{selectedGroup='';rerender();},'garden-group-btn');clear.setAttribute('aria-pressed',String(!selectedGroup));
+ for(const g of data.groupRows){const b=btn(groupBar,labels[g.group][lang]+' · '+g.plants.length,()=>{selectedGroup=selectedGroup===g.group?'':g.group;rerender();},'garden-group-btn');b.setAttribute('aria-pressed',String(selectedGroup===g.group));}
+ const focus=data.groupRows.filter(g=>!selectedGroup||g.group===selectedGroup);
+ for(const g of focus){const row=add(visitors,'div','garden-group-row');const top=add(row,'div','garden-group-heading');add(top,'b','',labels[g.group][lang]);add(top,'span','',String(g.plants.length)+'/'+data.coverage.eligible);const track=add(row,'div','garden-track');const fill=add(track,'div','garden-fill');fill.style.width=(data.coverage.eligible?g.plants.length/data.coverage.eligible*100:0)+'%';add(row,'small','muted',g.plants.length?g.plants.map(x=>x.name).join(', '):t('Dokumenteeritud seos puudub; tegelik seos võib olemas olla.','No documented association; actual associations may exist.'));if(g.plants.length){add(row,'small','muted',t('Õitsemiskuud (liigipõhine seos, mitte kuupõhine vaatlus): ','Flowering months (species association, not month-specific visit): ')+(g.months.map(short).join(', ')||t('teadmata','unknown'))+(g.unknownSeason.length?' · '+g.unknownSeason.length+' '+t('liigi õitsemisaeg teadmata','species with unknown season'):''));}}
+ const host=add(visitors,'p','garden-notice',t('Liblikaröövikute dokumenteeritud toidutaimi: ','Documented butterfly larval host plants: ')+data.hosts.length+(data.hosts.length?' – '+data.hosts.map(x=>x.name).join(', '):'. '+t('Puuduvad tõendid ei tähenda toidutaimede puudumist.','Lack of evidence does not establish absence.')));
+ const gaps=add(target,'section','garden-analysis-section');add(gaps,'h3','',t('Võimalikud puudujäägid ja andmelüngad','Possible gaps and data gaps'));add(gaps,'p','muted',t('Vaatlusaken märts–oktoober on KITA esialgne kasutajaliidese valik, mitte teaduslik lävend. Üks dokumenteeritud taim ei tõenda piisavat toitu.','March–October is a preliminary interface window, not a scientific threshold. One documented plant does not establish sufficient food.'));
+ if(!data.eligible.length)add(gaps,'p','garden-notice',t('Hinnatavaid hoiatuseta kirjeid ei ole.','No entries without a known warning to assess.'));
+ else{
+  if(data.gapMonths.length){const line=add(gaps,'div','garden-gap possible');add(line,'b','',t('Võimalik toidutaimede lünk','Possible forage plant gap'));add(line,'p','',data.gapMonths.map(x=>mn(x.month)).join(', ')+'. '+t('Nimekirjas ei ole nende kuude kohta dokumenteeritud õitsemise ja külastajaseose kombinatsiooni.','No documented flowering and visitor association combination in these months among listed plants.'));}
+  if(data.uncertainMonths.length){const line=add(gaps,'div','garden-gap unknown');add(line,'b','',t('Andmeid ei piisa','Insufficient data'));add(line,'p','',data.uncertainMonths.map(x=>mn(x.month)).join(', ')+'. '+t('Kontrolli esmalt teadmata omadusi; tegelikku lünka ei saa kinnitada.','Check unknown traits first; an actual gap cannot be established.'));}
+  if(!data.gapMonths.length&&!data.uncertainMonths.length)add(gaps,'p','garden-notice',t('Igas vaatlusakna kuus on vähemalt üks dokumenteeritud seos. See ei tõenda toidu piisavust.','Each month has at least one documented association. This does not establish sufficient food.'));
+  const absent=data.groupRows.filter(g=>!g.plants.length&&g.group!=='specialist_bee');
+  if(absent.length){const row=add(gaps,'div','garden-gap unknown');add(row,'b','',t('Rühmad, mille kohta seos puudub','Groups with no documented association'));add(row,'p','',absent.map(g=>labels[g.group][lang]).join(', ')+'. '+t('See on tõendilünk, mitte tõend nende putukate puudumise kohta.','This is an evidence gap, not evidence that these insects are absent.'));}
+ }
+ if(data.unknownBloom.length||data.unknownVisitors.length){const row=add(gaps,'div','garden-gap unknown');add(row,'b','',t('Kontrolli taimede andmeid','Review plant data'));if(data.unknownBloom.length)add(row,'p','',t('Õitsemisaeg teadmata: ','Flowering unknown: ')+data.unknownBloom.map(x=>x.name).join(', '));if(data.unknownVisitors.length)add(row,'p','',t('Õiekülastajate seos teadmata: ','Visitor associations unknown: ')+data.unknownVisitors.map(x=>x.name).join(', '));}
+ if(data.warnings.length){const row=add(gaps,'div','garden-gap warning');add(row,'b','',t('Võõrliikide hoiatus – analüüsist eraldatud','Alien species warnings – excluded from analysis'));for(const x of data.warnings){const line=add(row,'p','',x.name+' – '+t('ära istuta ega levita; kontrolli ametlikku teavet.','do not plant or spread; check official guidance.'));const url=x.warning?.evidence?.[0]?.url;if(url){const a=add(line,'a','',t(' Keskkonnaamet',' Environmental Board'));a.href=url;a.target='_blank';a.rel='noopener';}}}
+ if(onExplore){btn(gaps,t('Uuri taimede andmeid kataloogis','Explore plant data in catalog'),onExplore);}
+ const sources=add(target,'details','garden-sources');add(sources,'summary','',t('Andmeallikad ja piirangud','Sources and limitations'));
+ const sourceMap=new Map();for(const x of data.eligible){for(const s of [...(x.record?.evidence?.floweringMonths||[]),...x.visitors.flatMap(g=>x.sourcesFor(g)),...(x.host?x.record?.evidence?.butterflyLarvalHost||[]:[])])if(s.url)sourceMap.set(s.url,s.publisher||s.url);}
+ for(const [url,name] of sourceMap){const a=add(sources,'a','',name);a.href=url;a.target='_blank';a.rel='noopener';}
+ add(sources,'p','muted',t('Analüüs ei mõõda tegelikku elurikkust, isendite arvu, õite hulka, pesitsuspaiku ega hooldust. Liikide õiguslik ja Eesti pärismaisu kontroll ei ole täielik. Hoiatuse puudumine ei tähenda ohutut istutamist.','This analysis does not measure biodiversity, abundance, flower quantities, nesting or maintenance. Legal and Estonian native status checks are incomplete. No warning does not imply safe planting.'));
+}
+root.KITAGardenUI=Object.freeze({render});
+})(window);

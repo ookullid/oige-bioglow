@@ -60,11 +60,21 @@
     map: null,
     toastTimer: null,
     searchTimer: null,
-    analysisId: 0
+    analysisId: 0,
+    searchId: 0
   };
 
+  function invalidateAnalysis(){
+    ++state.analysisId;
+    const result=$('resultContent');
+    result.dataset.ready='false';delete result.dataset.completedAt;
+    result.classList.add('hidden');
+    $('resultEmpty').classList.remove('hidden');
+    $('analyzeBtn').disabled=false;
+    $('analyzeBtn').textContent=window.KITAI18n?.t('place.analyze')||'Analüüsi sobivust →';
+  }
   function debug(...args){ console.debug('[KITA]', ...args); }
-  function scrollToId(id){ $(id)?.scrollIntoView({behavior:'smooth', block:'start'}); }
+  function scrollToId(id){ if(window.KITAPages){ window.KITAPages.reveal(id); } else $(id)?.scrollIntoView({behavior:'smooth', block:'start'}); }
   function setStatus(message, type=''){
     const node = $('status');
     if(!node) return;
@@ -86,7 +96,7 @@
       return n === i || n.startsWith(i + ' ') || i.startsWith(n + ' ');
     });
   }
-  function isInvasive(name){ return matchesName(name, INVASIVE); }
+  function isInvasive(name){ return !!window.KITAPlantDB?.restriction(name) || matchesName(name, INVASIVE); }
   function protectedInfo(name){
     if(matchesName(name, PROTECTED_I)) return {category:'I', common:null};
     if(matchesName(name, PROTECTED_II)) return {category:'II', common:null};
@@ -113,7 +123,7 @@
     if(/^[A-Z][a-z-]+\s+[a-z]/.test(String(shown || ''))) return genus || 'taim';
     return name || shown || scientific || 'taim';
   }
-  function aliasFor(query){ return SIMPLE_NAMES[norm(query)] || EXTRA_NAMES[norm(query)] || null; }
+  function aliasFor(query){ const risk=window.KITAPlantDB?.restriction(query);return window.KITAPlantDB?.find(query)?.scientific || (risk?.rank==='species'?risk.scientific:null) || SIMPLE_NAMES[norm(query)] || EXTRA_NAMES[norm(query)] || null; }
 
   async function fetchWithTimeout(url, options={}, timeoutMs=6000){
     const controller = new AbortController();
@@ -247,10 +257,11 @@
 
   function setLocation(lat, lon, source){
     lat = Number(lat); lon = Number(lon);
-    if(!Number.isFinite(lat) || !Number.isFinite(lon)){
+    if(!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat)>90 || Math.abs(lon)>180){
       setStatus('Asukoha koordinaadid ei ole õiged.', 'error');
       return;
     }
+    invalidateAnalysis();
     cancelAddressSearch(true);
     state.location = {lat, lon, source};
     if(state.map){
@@ -259,6 +270,7 @@
       state.map.setView([lat, lon], 15);
       setTimeout(() => state.map?.invalidateSize(), 80);
     }
+    delete $('coordText').dataset.exactCoords;
     $('coordText').textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
     $('mapBadge').textContent = source;
     $('locationState').innerHTML = `<span class="dot ready"></span><span>Asukoht valmis: ${esc(source)}</span>`;
@@ -287,6 +299,10 @@
       setStatus('Kasuta JPG või JPEG fotot.', 'error');
       return;
     }
+    if(file.size>15*1024*1024){setStatus('Foto on liiga suur (max 15 MB).','error');return;}
+    invalidateAnalysis();
+    $('photoConsent').checked=false;
+    if($('preview').src.startsWith('blob:')) URL.revokeObjectURL($('preview').src);
     state.file = file;
     $('preview').src = URL.createObjectURL(file);
     $('photoName').textContent = file.name;
@@ -298,6 +314,7 @@
     }
     try{
       const exif = await exifr.parse(file, {gps:true}) || {};
+      if(state.file!==file) return;
       if(exif.latitude != null && exif.longitude != null){
         setLocation(exif.latitude, exif.longitude, 'foto GPS');
         $('photoMeta').textContent = `${(file.size / 1024 / 1024).toFixed(1)} MB · GPS leitud`;
@@ -306,13 +323,17 @@
         setStatus('Fotol GPS puudub — vali asukoht kaardilt või seadmest.', 'warn');
       }
     } catch(error){
+      if(state.file!==file) return;
       debug('EXIF viga', error);
       $('photoMeta').textContent = `${(file.size / 1024 / 1024).toFixed(1)} MB · GPS-i ei saanud lugeda`;
     }
   }
 
   function removePhoto(){
+    invalidateAnalysis();
+    if($('preview').src.startsWith('blob:')) URL.revokeObjectURL($('preview').src);
     state.file = null;
+    if($('photoConsent'))$('photoConsent').checked=false;
     $('files').value = '';
     $('photoRow').classList.add('hidden');
     $('preview').src = '';
@@ -335,6 +356,8 @@
     return (data || []).filter(item => item.rank === 'SPECIES' || item.rank === 'SUBSPECIES');
   }
   function setChosenPlant(plant){
+    ++state.searchId;
+    clearTimeout(state.searchTimer);
     state.plant = {...plant, common:plant.common || DISPLAY[plant.scientific] || plant.vernacular || plant.scientific, media:''};
     $('plantInput').value = state.plant.common;
     $('clearPlant').classList.remove('hidden');
@@ -351,7 +374,7 @@
       ? '<span class="tag danger">võõr-/invasiivse liigi kontroll</span>'
       : protection
         ? `<span class="tag protected">🛡 ${protection.category} kaitsekategooria</span>`
-        : '<span class="tag normal">tavapärane liik</span>';
+        : '<span class="tag normal">staatus eraldi kontrollida</span>';
     const image = state.plant.media
       ? `<div class="chosen-photo"><img src="${esc(state.plant.media)}" alt="${esc(state.plant.common)}" loading="lazy" referrerpolicy="no-referrer"></div>`
       : '<div class="chosen-photo">🌿</div>';
@@ -370,6 +393,7 @@
     } catch(error){ debug('Valitud taime pilt puudub', error); }
   }
   async function loadSuggestions(query, autoPick=false){
+    const requestId=++state.searchId;
     const alias = aliasFor(query);
     try{
       const items = [];
@@ -393,6 +417,7 @@
           [item.scientific, item.vernacular].some(name => norm(name).startsWith(queryNorm)) ? 1 : 2;
         return rank(a)-rank(b);
       });
+      if(requestId!==state.searchId || norm($('plantInput').value)!==norm(query)) return;
       if(autoPick && items[0]){
         const item = items[0];
         setChosenPlant({...item, common:DISPLAY[item.scientific] || item.vernacular || query});
@@ -408,10 +433,12 @@
       root.querySelectorAll('[data-suggestion]').forEach(button => {
         button.addEventListener('click', () => {
           const item = items[Number(button.dataset.suggestion)];
+          invalidateAnalysis();
           setChosenPlant({...item, common:DISPLAY[item.scientific] || item.vernacular || query});
         });
       });
     } catch(error){
+      if(requestId!==state.searchId) return;
       debug('Taimeotsingu viga', error);
       $('suggest').innerHTML = '<button type="button" disabled>Taimede otsing ebaõnnestus.</button>';
       $('suggest').classList.remove('hidden');
@@ -420,6 +447,7 @@
   async function resolveTypedPlant(){
     if(state.plant) return state.plant;
     const raw = $('plantInput').value.trim();
+    const requestId=state.searchId;
     if(!raw) return null;
     const alias = aliasFor(raw);
     try{
@@ -433,7 +461,7 @@
         ) || suggestions[0];
         if(first) item = {key:first.key || first.usageKey, scientific:first.canonicalName || first.scientificName || raw, vernacular:first.vernacularName || ''};
       }
-      if(!item) return null;
+      if(!item || requestId!==state.searchId || norm($('plantInput').value)!==norm(raw)) return null;
       setChosenPlant({...item, common:DISPLAY[item.scientific] || item.vernacular || raw});
       return state.plant;
     } catch(error){ debug('Kirjutatud taime lahendamine ebaõnnestus', error); return null; }
@@ -466,6 +494,7 @@
   }
   async function photoAI(file, location){
     if(!file) return 'Fotot ei kasutatud';
+    if(!$('photoConsent')?.checked)return 'Foto jäi seadmesse; saatmise nõusolek puudub';
     try{
       const form = new FormData();
       form.append('image', file);
@@ -492,10 +521,10 @@
     let copy = 'KITA ei kasuta piirkonna vaatlusarvu kasvukoha sobivuse määramiseks. Praegune prototüüp ei võrdle veel taime kinnitatud valguse ja mullavajadusi sinu kasvukohaga.';
     if(invasive){
       kind = 'bad'; title = 'Ära istuta loodusesse'; label = 'VÕÕR- VÕI INVASIIVSE LIIGI HOIATUS';
-      copy = 'Liik on KITA kontrollnimekirjas; kontrolli kehtivat Keskkonnaameti teavet.';
-    } else if(protection?.category === 'I' || protection?.category === 'II'){
+      const risk=window.KITAPlantDB?.restriction(state.plant.scientific); copy=risk?.status==='national_prohibited'?'Liik kuulub Eesti keelatud võõrliikide nimekirja. Kontrolli Keskkonnaameti ajakohast infot.':risk?.status==='problematic'?'Keskkonnaamet nimetab liiki probleemseks võõrliigiks. KITA ei soovita seda istutada.':'Liik on KITA kontrollnimekirjas; kontrolli kehtivat Keskkonnaameti teavet.';
+    } else if(protection){
       kind = 'maybe'; title = 'Kaitsealune liik'; label = `${protection.category} KAITSEKATEGOORIA`;
-      copy = 'KITA ei anna I–II kaitsekategooria liigile tavapärast istutussoovitust. Ära võta taimi loodusest.';
+      copy = 'KITA ei anna kaitsealusele liigile tavapärast istutussoovitust. Ära võta taimi loodusest.';
     }
     const siteNote = hasSiteContext ? '<div class="safety-note">Sinu kasvukohakirjeldus on lisainfo. Praegu ei võrrelda seda automaatselt kinnitatud liigipõhiste vajadustega.</div>' : '';
     root.className = `verdict-card ${kind}`;
@@ -546,17 +575,18 @@
 
   async function loadAlternativeImage(item, index){
     const rootId = `alt-image-${index}`;
+    const generation=state.analysisId;
     try{
       const data = await fetchJson(`https://api.gbif.org/v1/occurrence/search?taxon_key=${item.key}&media_type=StillImage&limit=5`, {}, 3000);
       const media = (data.results || []).flatMap(row => row.media || []).find(row => row.identifier);
       const root = $(rootId);
-      if(!root) return;
+      if(!root||generation!==state.analysisId) return;
       root.innerHTML = media?.identifier
         ? `<img src="${esc(media.identifier)}" alt="${esc(item.simple)}" loading="lazy" referrerpolicy="no-referrer">`
         : '<div class="plant-placeholder">🌿<small>Pilt pole saadaval</small></div>';
     } catch(error){
       const root = $(rootId);
-      if(root) root.innerHTML = '<div class="plant-placeholder">🌿<small>Pilt pole saadaval</small></div>';
+      if(root&&generation===state.analysisId) root.innerHTML = '<div class="plant-placeholder">🌿<small>Pilt pole saadaval</small></div>';
     }
   }
 
@@ -654,9 +684,14 @@
 
   async function runAnalysis(){
     const button = $('analyzeBtn');
+    invalidateAnalysis();
     const analysisId = ++state.analysisId;
+    clearTimeout(state.searchTimer); ++state.searchId;
+    button.disabled=true; button.textContent='Analüüsin…';
     try{
-      if(!await resolveTypedPlant()){
+      const plant=await resolveTypedPlant();
+      if(analysisId!==state.analysisId) return;
+      if(!plant){
         setStatus('Ma ei leidnud seda taime. Proovi näiteks „kadakas”.', 'error');
         return;
       }
@@ -682,29 +717,36 @@
       renderResult(nearby, aiText);
       renderAlternatives(nearby);
       renderConservation(nearby);
-      loadEnvironment(state.location.lat, state.location.lon, analysisId);
+      await loadEnvironment(state.location.lat, state.location.lon, analysisId);
+      if(analysisId!==state.analysisId) return;
+      $('resultContent').dataset.completedAt=new Date().toISOString();
+      $('resultContent').dataset.ready='true';
+      $('resultContent').dataset.analysisId=String(analysisId);
       setStatus('Analüüs valmis.', 'ok');
       scrollToId('results');
     } catch(error){
+      if(analysisId!==state.analysisId) return;
+      $('resultContent').classList.add('hidden'); $('resultEmpty').classList.remove('hidden');
       console.error('[KITA] Analüüs ebaõnnestus', error);
       setStatus(error.message || 'Analüüs ebaõnnestus. Proovi uuesti.', 'error');
       $('plants').innerHTML = '<div class="empty-result"><b>Soovitusi ei saanud laadida</b><p>Proovi uuesti või vali teine punkt.</p></div>';
     } finally {
       if(analysisId === state.analysisId){
         button.disabled = false;
-        button.textContent = 'Analüüsi sobivust →';
+        button.textContent = window.KITAI18n?.t('place.analyze')||'Analüüsi sobivust →';
       }
     }
   }
 
   function clearPlant(){
+    invalidateAnalysis(); ++state.searchId; clearTimeout(state.searchTimer);
     state.plant = null;
     $('plantInput').value = '';
     $('clearPlant').classList.add('hidden');
     $('suggest').classList.add('hidden');
     renderChosenPlant();
   }
-  function reset(){
+  function reset(shouldNavigate=true){
     cancelAddressSearch(true);
     state.analysisId += 1;
     clearPlant();
@@ -713,13 +755,14 @@
     state.location = null;
     if(state.map && state.marker){ state.map.removeLayer(state.marker); state.marker = null; }
     state.map?.setView([58.65,25.1],7);
+    delete $('coordText').dataset.exactCoords;
     $('coordText').textContent = 'Koordinaadid puuduvad';
     $('mapBadge').textContent = 'Klõpsa kaardil';
     $('locationState').innerHTML = '<span class="dot"></span><span>Asukohta pole valitud</span>';
     $('resultContent').classList.add('hidden');
     $('resultEmpty').classList.remove('hidden');
     setStatus('Vali taim ja koht.');
-    scrollToId('analyze');
+    if(shouldNavigate!==false)scrollToId('analyze');
   }
 
   function bindEvents(){
@@ -730,6 +773,7 @@
     });
     document.querySelectorAll('[data-scroll]').forEach(button => button.addEventListener('click', () => scrollToId(button.dataset.scroll)));
     document.querySelectorAll('[data-quick]').forEach(button => button.addEventListener('click', () => {
+      invalidateAnalysis(); ++state.searchId; clearTimeout(state.searchTimer);
       $('plantInput').value = button.dataset.quick;
       $('clearPlant').classList.remove('hidden');
       state.plant = null;
@@ -737,7 +781,7 @@
       loadSuggestions(button.dataset.quick, true);
     }));
     $('plantInput').addEventListener('input', event => {
-      clearTimeout(state.searchTimer);
+      invalidateAnalysis(); ++state.searchId; clearTimeout(state.searchTimer);
       state.plant = null;
       renderChosenPlant();
       const query = event.target.value.trim();
@@ -745,6 +789,7 @@
       if(query.length < 2){ $('suggest').classList.add('hidden'); return; }
       state.searchTimer = setTimeout(() => loadSuggestions(query), 220);
     });
+    ['siteLight','siteMoisture','siteSoil','siteWind','photoConsent'].forEach(id=>$(id)?.addEventListener('change',invalidateAnalysis));
     $('clearPlant').addEventListener('click', clearPlant);
     $('pickFile').addEventListener('click', () => $('files').click());
     $('files').addEventListener('change', () => readPhoto($('files').files[0]));
@@ -763,9 +808,13 @@
 
   function init(){
     try{
+      window.KITAPlantNames={...EXTRA_NAMES};
       bindEvents();
-      initMap();
-      debug('FINAL versioon käivitus');
+      let previousOwner=window.KITAAuth?.getState().userId||null;
+      document.addEventListener('kita:auth',()=>{const owner=window.KITAAuth?.getState().userId||null;if(previousOwner&&owner!==previousOwner)reset(false);previousOwner=owner;});
+      document.addEventListener('kita:page', e=>{if(e.detail.page==='analysis'){ if(!state.map && window.L) initMap(); else if(!state.map) initMap(); requestAnimationFrame(()=>state.map?.invalidateSize()); }});
+      window.KITASelectLocation=(lat,lon)=>{ if(window.KITAPages) window.KITAPages.reveal('map'); setLocation(lat,lon,'salvestatud analüüs'); requestAnimationFrame(()=>state.map?.invalidateSize()); };
+      debug('KITA 2.0 käivitus');
     } catch(error){
       console.error('[KITA] Käivitamise viga', error);
       setStatus('Lehe käivitamisel tekkis viga. Värskenda lehte.', 'error');
